@@ -34,8 +34,14 @@ export default function DashboardPage() {
 
     if (error) {
         return (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-red-500">
-                Error: {error}
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6">
+                <p className="text-red-500 mb-4">Error: {error}</p>
+                <button
+                    onClick={() => { setError(""); setLoading(true); loadStats(); }}
+                    className="bg-white text-black px-4 py-2 rounded-xl font-bold hover:bg-zinc-200"
+                >
+                    Retry
+                </button>
             </div>
         );
     }
