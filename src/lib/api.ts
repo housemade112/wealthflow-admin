@@ -1,0 +1,115 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wealthflow-backend.onrender.com';
+
+export async function apiRequest(
+    endpoint: string,
+    options: RequestInit = {}
+): Promise<any> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+    };
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || 'API request failed');
+    }
+
+    return data;
+}
+
+// Auth
+export const login = (email: string, password: string) =>
+    apiRequest('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+    });
+
+export const getMe = () => apiRequest('/api/auth/me');
+
+// Admin Stats
+export const getStats = () => apiRequest('/api/admin/stats');
+
+// Users
+export const getUsers = (params?: { search?: string; status?: string; page?: number }) => {
+    const query = new URLSearchParams(params as Record<string, string>).toString();
+    return apiRequest(`/api/admin/users${query ? `?${query}` : ''}`);
+};
+
+export const getUser = (id: string) => apiRequest(`/api/admin/users/${id}`);
+
+export const updateUser = (id: string, data: any) =>
+    apiRequest(`/api/admin/users/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+
+export const resetUserPassword = (id: string, newPassword: string) =>
+    apiRequest(`/api/admin/users/${id}/reset-password`, {
+        method: 'POST',
+        body: JSON.stringify({ newPassword }),
+    });
+
+// Deposits
+export const getDeposits = (status?: string) =>
+    apiRequest(`/api/admin/deposits${status ? `?status=${status}` : ''}`);
+
+export const approveDeposit = (id: string, note?: string) =>
+    apiRequest(`/api/admin/deposits/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ note }),
+    });
+
+export const rejectDeposit = (id: string, note?: string) =>
+    apiRequest(`/api/admin/deposits/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ note }),
+    });
+
+// Withdrawals
+export const getWithdrawals = (status?: string) =>
+    apiRequest(`/api/admin/withdrawals${status ? `?status=${status}` : ''}`);
+
+export const approveWithdrawal = (id: string, note?: string) =>
+    apiRequest(`/api/admin/withdrawals/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ note }),
+    });
+
+export const rejectWithdrawal = (id: string, note?: string) =>
+    apiRequest(`/api/admin/withdrawals/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ note }),
+    });
+
+// Investments
+export const getInvestments = (status?: string) =>
+    apiRequest(`/api/admin/investments${status ? `?status=${status}` : ''}`);
+
+export const createInvestment = (data: {
+    userIds: string[];
+    amount: number;
+    profitPercent: number;
+    payoutFrequency: number;
+    durationDays: number;
+}) =>
+    apiRequest('/api/admin/investments', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+
+export const cancelInvestment = (id: string) =>
+    apiRequest(`/api/admin/investments/${id}/cancel`, {
+        method: 'POST',
+    });
+
+// Admin Logs
+export const getAdminLogs = () => apiRequest('/api/admin/logs');
