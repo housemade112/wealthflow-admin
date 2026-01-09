@@ -58,6 +58,11 @@ export const resetUserPassword = (id: string, newPassword: string) =>
         body: JSON.stringify({ newPassword }),
     });
 
+export const deleteUser = (id: string) =>
+    apiRequest(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+    });
+
 // Deposits
 export const getDeposits = (status?: string) =>
     apiRequest(`/api/admin/deposits${status ? `?status=${status}` : ''}`);

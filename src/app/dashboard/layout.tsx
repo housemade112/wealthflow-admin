@@ -74,8 +74,8 @@ export default function DashboardLayout({
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
-                        <h1 className="text-xl font-bold">WealthFlow</h1>
-                        <span className="text-xs bg-emerald-500/20 text-emerald-500 px-2 py-1 rounded">Admin</span>
+                        <h1 className="text-xl font-bold tracking-tight">WealthFlow</h1>
+                        <span className="text-[10px] uppercase tracking-wider font-bold bg-white text-black px-2 py-0.5 border border-white">Admin</span>
                     </div>
 
                     {/* Navigation */}
