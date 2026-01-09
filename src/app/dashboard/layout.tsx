@@ -11,7 +11,8 @@ import {
     TrendingUp,
     LogOut,
     Menu,
-    X
+    X,
+    Wallet
 } from "lucide-react";
 
 const navItems = [
@@ -20,6 +21,7 @@ const navItems = [
     { href: "/dashboard/deposits", label: "Deposits", icon: ArrowDownCircle },
     { href: "/dashboard/withdrawals", label: "Withdrawals", icon: ArrowUpCircle },
     { href: "/dashboard/investments", label: "Investments", icon: TrendingUp },
+    { href: "/dashboard/wallets", label: "Wallets", icon: Wallet },
 ];
 
 export default function DashboardLayout({

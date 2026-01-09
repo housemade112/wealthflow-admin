@@ -113,3 +113,30 @@ export const cancelInvestment = (id: string) =>
 
 // Admin Logs
 export const getAdminLogs = () => apiRequest('/api/admin/logs');
+
+// Wallet Addresses
+export const getWallets = () => apiRequest('/api/admin/wallets');
+
+export const createWallet = (data: {
+    symbol: string;
+    name: string;
+    network: string;
+    address: string;
+    icon?: string;
+}) =>
+    apiRequest('/api/admin/wallets', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+
+export const updateWallet = (id: string, data: any) =>
+    apiRequest(`/api/admin/wallets/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+
+export const deleteWallet = (id: string) =>
+    apiRequest(`/api/admin/wallets/${id}`, {
+        method: 'DELETE',
+    });
+
