@@ -90,9 +90,9 @@ export default function InvestmentsPage() {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
-            case "ACTIVE": return <TrendingUp size={16} className="text-emerald-500" />;
-            case "COMPLETED": return <CheckCircle size={16} className="text-blue-500" />;
-            case "CANCELLED": return <XCircle size={16} className="text-rose-500" />;
+            case "ACTIVE": return <TrendingUp size={16} className="text-white" />;
+            case "COMPLETED": return <CheckCircle size={16} className="text-white" />;
+            case "CANCELLED": return <XCircle size={16} className="text-zinc-500" />;
         }
     };
 
@@ -119,8 +119,8 @@ export default function InvestmentsPage() {
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors ${statusFilter === status
-                                ? "bg-white text-black"
-                                : "bg-zinc-900 text-zinc-400 hover:text-white"
+                            ? "bg-white text-black"
+                            : "bg-zinc-900 text-zinc-400 hover:text-white"
                             }`}
                     >
                         {status}
@@ -148,9 +148,7 @@ export default function InvestmentsPage() {
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
                                         {getStatusIcon(inv.status)}
-                                        <span className={`text-xs font-bold ${inv.status === "ACTIVE" ? "text-emerald-500" :
-                                                inv.status === "COMPLETED" ? "text-blue-500" : "text-rose-500"
-                                            }`}>
+                                        <span className="text-xs font-medium text-zinc-400 uppercase">
                                             {inv.status}
                                         </span>
                                     </div>
@@ -164,11 +162,11 @@ export default function InvestmentsPage() {
                                     </div>
                                     <div>
                                         <p className="text-zinc-500 text-xs">Profit %</p>
-                                        <p className="font-bold text-emerald-500">{inv.profitPercent}%</p>
+                                        <p className="font-medium text-white">{inv.profitPercent}%</p>
                                     </div>
                                     <div>
                                         <p className="text-zinc-500 text-xs">Total Profit</p>
-                                        <p className="font-bold text-emerald-500">${inv.totalProfit?.toLocaleString()}</p>
+                                        <p className="font-medium text-white">${inv.totalProfit?.toLocaleString()}</p>
                                     </div>
                                 </div>
 
@@ -181,7 +179,7 @@ export default function InvestmentsPage() {
                                 {inv.status === "ACTIVE" && (
                                     <button
                                         onClick={() => handleCancelInvestment(inv.id)}
-                                        className="bg-zinc-800 text-rose-500 px-4 py-2 rounded-xl font-bold hover:bg-zinc-700 transition-colors"
+                                        className="bg-zinc-900 text-white border border-zinc-800 px-4 py-2 font-medium hover:bg-zinc-800 transition-colors"
                                     >
                                         Cancel
                                     </button>
@@ -270,7 +268,7 @@ export default function InvestmentsPage() {
                             {amount && profitPercent && durationDays && payoutFrequency && (
                                 <div className="bg-zinc-900 rounded-xl p-4">
                                     <p className="text-xs text-zinc-500 mb-2">Projected Total Profit</p>
-                                    <p className="text-2xl font-bold text-emerald-500">
+                                    <p className="text-2xl font-medium text-white">
                                         ${(parseFloat(amount) * (parseFloat(profitPercent) / 100) * parseInt(durationDays) * parseInt(payoutFrequency)).toFixed(2)}
                                     </p>
                                     <p className="text-xs text-zinc-500 mt-1">

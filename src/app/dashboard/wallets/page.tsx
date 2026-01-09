@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getWallets, createWallet, updateWallet, deleteWallet } from "@/lib/api";
-import { Plus, Pencil, Trash2, X, Loader2, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Loader2 } from "lucide-react";
 
 interface Wallet {
     id: string;
@@ -14,6 +14,15 @@ interface Wallet {
     isActive: boolean;
 }
 
+const CRYPTO_OPTIONS = [
+    { symbol: "BTC", name: "Bitcoin", network: "SegWit" },
+    { symbol: "ETH", name: "Ethereum", network: "ERC-20" },
+    { symbol: "USDT", name: "Tether", network: "TRC-20" },
+    { symbol: "XRP", name: "Ripple", network: "Ripple" },
+    { symbol: "BNB", name: "Binance Coin", network: "BSC" },
+    { symbol: "SOL", name: "Solana", network: "Solana" },
+];
+
 export default function WalletsPage() {
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [loading, setLoading] = useState(true);
@@ -22,7 +31,6 @@ export default function WalletsPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
 
-    // Form state
     const [form, setForm] = useState({
         symbol: "",
         name: "",
@@ -65,6 +73,15 @@ export default function WalletsPage() {
         });
         setError("");
         setShowModal(true);
+    };
+
+    const handleCryptoSelect = (crypto: typeof CRYPTO_OPTIONS[0]) => {
+        setForm({
+            ...form,
+            symbol: crypto.symbol,
+            name: crypto.name,
+            network: crypto.network,
+        });
     };
 
     const handleSave = async () => {
@@ -113,21 +130,19 @@ export default function WalletsPage() {
 
     return (
         <div className="space-y-6 bg-black min-h-screen text-white font-sans">
-            {/* Header */}
             <div className="flex items-center justify-between py-4 border-b border-zinc-800">
                 <div>
-                    <h2 className="text-xl font-medium tracking-tight">Deposit Wallets</h2>
+                    <h2 className="text-xl font-medium">Deposit Wallets</h2>
                 </div>
                 <button
                     onClick={openCreateModal}
-                    className="flex items-center gap-2 bg-white text-black px-4 py-2 text-sm font-bold border border-white hover:bg-zinc-200 transition-colors uppercase tracking-wider"
+                    className="flex items-center gap-2 bg-white text-black px-4 py-2 text-sm font-bold hover:bg-zinc-200 transition-colors uppercase"
                 >
                     <Plus size={16} />
                     Add Wallet
                 </button>
             </div>
 
-            {/* Wallets Table */}
             <div className="border-t border-zinc-800">
                 {loading ? (
                     <div className="p-12 text-center text-zinc-500 text-sm">
@@ -143,11 +158,11 @@ export default function WalletsPage() {
                     <table className="w-full text-sm">
                         <thead className="border-b border-zinc-800">
                             <tr>
-                                <th className="text-left py-4 font-medium text-zinc-500 uppercase tracking-wider w-24">Asset</th>
-                                <th className="text-left py-4 font-medium text-zinc-500 uppercase tracking-wider w-32">Network</th>
-                                <th className="text-left py-4 font-medium text-zinc-500 uppercase tracking-wider">Address</th>
-                                <th className="text-left py-4 font-medium text-zinc-500 uppercase tracking-wider w-24">Status</th>
-                                <th className="text-right py-4 font-medium text-zinc-500 uppercase tracking-wider w-24">Actions</th>
+                                <th className="text-left py-4 font-medium text-zinc-500 uppercase w-24">Asset</th>
+                                <th className="text-left py-4 font-medium text-zinc-500 uppercase w-32">Network</th>
+                                <th className="text-left py-4 font-medium text-zinc-500 uppercase">Address</th>
+                                <th className="text-left py-4 font-medium text-zinc-500 uppercase w-24">Status</th>
+                                <th className="text-right py-4 font-medium text-zinc-500 uppercase w-24">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-900">
@@ -159,7 +174,7 @@ export default function WalletsPage() {
                                     <td className="py-4">
                                         <button
                                             onClick={() => handleToggleActive(wallet)}
-                                            className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider border transition-colors ${wallet.isActive
+                                            className={`px-2 py-1 text-[10px] font-bold uppercase border transition-colors ${wallet.isActive
                                                     ? "bg-white text-black border-white"
                                                     : "bg-black text-zinc-500 border-zinc-800 hover:border-zinc-600"
                                                 }`}
@@ -172,14 +187,12 @@ export default function WalletsPage() {
                                             <button
                                                 onClick={() => openEditModal(wallet)}
                                                 className="text-zinc-500 hover:text-white transition-colors"
-                                                title="Edit"
                                             >
                                                 <Pencil size={14} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(wallet.id)}
                                                 className="text-zinc-500 hover:text-white transition-colors"
-                                                title="Delete"
                                             >
                                                 <Trash2 size={14} />
                                             </button>
@@ -192,30 +205,44 @@ export default function WalletsPage() {
                 )}
             </div>
 
-            {/* Create/Edit Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
                     <div className="bg-zinc-950 border border-zinc-800 w-full max-w-md">
-                        {/* Modal Header */}
                         <div className="flex items-center justify-between p-6 border-b border-zinc-800">
-                            <h3 className="text-sm font-bold uppercase tracking-wider">
+                            <h3 className="text-sm font-bold uppercase">
                                 {editingWallet ? "Edit Wallet" : "Add New Wallet"}
                             </h3>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="text-zinc-500 hover:text-white"
-                            >
+                            <button onClick={() => setShowModal(false)} className="text-zinc-500 hover:text-white">
                                 <X size={18} />
                             </button>
                         </div>
 
-                        {/* Modal Body */}
                         <div className="p-6 space-y-5">
                             {error && (
-                                <div className="border border-white/20 p-3 text-xs text-white bg-white/5">
+                                <div className="border border-zinc-700 p-3 text-xs text-white bg-zinc-900">
                                     {error}
                                 </div>
                             )}
+
+                            {/* Quick Select Crypto */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-medium text-zinc-500 uppercase">Quick Select</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {CRYPTO_OPTIONS.map((crypto) => (
+                                        <button
+                                            key={crypto.symbol}
+                                            type="button"
+                                            onClick={() => handleCryptoSelect(crypto)}
+                                            className={`p-2 text-xs font-bold border transition-colors ${form.symbol === crypto.symbol
+                                                    ? "bg-white text-black border-white"
+                                                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-600"
+                                                }`}
+                                        >
+                                            {crypto.symbol}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
@@ -263,7 +290,6 @@ export default function WalletsPage() {
                             </div>
                         </div>
 
-                        {/* Modal Footer */}
                         <div className="flex gap-0 border-t border-zinc-800">
                             <button
                                 onClick={() => setShowModal(false)}

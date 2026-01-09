@@ -53,9 +53,9 @@ export default function WithdrawalsPage() {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
-            case "PENDING": return <Clock size={16} className="text-amber-500" />;
-            case "APPROVED": return <CheckCircle size={16} className="text-emerald-500" />;
-            case "REJECTED": return <XCircle size={16} className="text-rose-500" />;
+            case "PENDING": return <Clock size={16} className="text-zinc-500" />;
+            case "APPROVED": return <CheckCircle size={16} className="text-white" />;
+            case "REJECTED": return <XCircle size={16} className="text-zinc-500" />;
         }
     };
 
@@ -73,8 +73,8 @@ export default function WithdrawalsPage() {
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors ${statusFilter === status
-                                ? "bg-white text-black"
-                                : "bg-zinc-900 text-zinc-400 hover:text-white"
+                            ? "bg-white text-black"
+                            : "bg-zinc-900 text-zinc-400 hover:text-white"
                             }`}
                     >
                         {status}
@@ -102,9 +102,7 @@ export default function WithdrawalsPage() {
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
                                         {getStatusIcon(withdrawal.status)}
-                                        <span className={`text-xs font-bold ${withdrawal.status === "PENDING" ? "text-amber-500" :
-                                                withdrawal.status === "APPROVED" ? "text-emerald-500" : "text-rose-500"
-                                            }`}>
+                                        <span className="text-xs font-medium text-zinc-400 uppercase">
                                             {withdrawal.status}
                                         </span>
                                     </div>
@@ -113,7 +111,7 @@ export default function WithdrawalsPage() {
                                 </div>
 
                                 <div className="text-center md:text-right">
-                                    <p className="text-2xl font-bold text-rose-500">${withdrawal.amount?.toLocaleString()}</p>
+                                    <p className="text-2xl font-medium text-white">${withdrawal.amount?.toLocaleString()}</p>
                                     <p className="text-xs text-zinc-500">{withdrawal.method?.toUpperCase()}</p>
                                 </div>
 
@@ -127,7 +125,7 @@ export default function WithdrawalsPage() {
                                         <button
                                             onClick={() => handleApprove(withdrawal.id)}
                                             disabled={processing === withdrawal.id}
-                                            className="flex items-center gap-2 bg-emerald-500 text-black px-4 py-2 rounded-xl font-bold hover:bg-emerald-400 transition-colors disabled:opacity-50"
+                                            className="flex items-center gap-2 bg-white text-black px-4 py-2 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
                                         >
                                             <Check size={18} />
                                             Approve
@@ -135,7 +133,7 @@ export default function WithdrawalsPage() {
                                         <button
                                             onClick={() => handleReject(withdrawal.id)}
                                             disabled={processing === withdrawal.id}
-                                            className="flex items-center gap-2 bg-zinc-800 text-rose-500 px-4 py-2 rounded-xl font-bold hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                                            className="flex items-center gap-2 bg-zinc-900 text-white border border-zinc-800 px-4 py-2 font-medium hover:bg-zinc-800 transition-colors disabled:opacity-50"
                                         >
                                             <X size={18} />
                                             Reject
