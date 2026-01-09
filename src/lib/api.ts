@@ -63,6 +63,12 @@ export const deleteUser = (id: string) =>
         method: 'DELETE',
     });
 
+export const sendNotification = (id: string, title: string, message: string) =>
+    apiRequest(`/api/admin/users/${id}/notify`, {
+        method: 'POST',
+        body: JSON.stringify({ title, message }),
+    });
+
 // Deposits
 export const getDeposits = (status?: string) =>
     apiRequest(`/api/admin/deposits${status ? `?status=${status}` : ''}`);
