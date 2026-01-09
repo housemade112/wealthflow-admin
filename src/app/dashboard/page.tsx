@@ -47,12 +47,12 @@ export default function DashboardPage() {
     }
 
     const statCards = [
-        { label: "Total Users", value: stats?.totalUsers || 0, icon: Users, color: "text-blue-500", bg: "bg-blue-500/20" },
-        { label: "Active Users", value: stats?.activeUsers || 0, icon: Users, color: "text-emerald-500", bg: "bg-emerald-500/20" },
-        { label: "Pending Deposits", value: stats?.pendingDeposits || 0, icon: ArrowDownCircle, color: "text-amber-500", bg: "bg-amber-500/20" },
-        { label: "Pending Withdrawals", value: stats?.pendingWithdrawals || 0, icon: ArrowUpCircle, color: "text-rose-500", bg: "bg-rose-500/20" },
-        { label: "Active Investments", value: stats?.activeInvestments || 0, icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/20" },
-        { label: "Total Available", value: `$${(stats?.totalBalance?.available || 0).toLocaleString()}`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/20" },
+        { label: "Total Users", value: stats?.totalUsers || 0, icon: Users },
+        { label: "Active Users", value: stats?.activeUsers || 0, icon: Users },
+        { label: "Pending Deposits", value: stats?.pendingDeposits || 0, icon: ArrowDownCircle },
+        { label: "Pending Withdrawals", value: stats?.pendingWithdrawals || 0, icon: ArrowUpCircle },
+        { label: "Active Investments", value: stats?.activeInvestments || 0, icon: TrendingUp },
+        { label: "Total Available", value: `$${(stats?.totalBalance?.available || 0).toLocaleString()}`, icon: DollarSign },
     ];
 
     return (
@@ -67,14 +67,14 @@ export default function DashboardPage() {
                 {statCards.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={stat.label} className="bg-zinc-950 border border-zinc-800 rounded-xl p-6">
+                        <div key={stat.label} className="bg-zinc-950 border border-zinc-800 p-6">
                             <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center`}>
-                                    <Icon size={24} className={stat.color} />
+                                <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                                    <Icon size={24} className="text-zinc-500" />
                                 </div>
                                 <div>
                                     <p className="text-zinc-500 text-sm">{stat.label}</p>
-                                    <p className="text-2xl font-bold">{stat.value}</p>
+                                    <p className="text-2xl font-medium text-white">{stat.value}</p>
                                 </div>
                             </div>
                         </div>
