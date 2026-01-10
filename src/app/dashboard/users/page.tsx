@@ -104,7 +104,7 @@ export default function UsersPage() {
 
     const openBalanceModal = (field: 'available' | 'invested' | 'totalProfit' | 'bonus') => {
         setBalanceField(field);
-        setNewBalance(selectedUser?.balance?.[field]?.toString() || "0");
+        setNewBalance(""); // Start empty - we're ADDING, not replacing
         setShowBalanceModal(true);
     };
 
@@ -112,12 +112,17 @@ export default function UsersPage() {
         if (!selectedUser || !newBalance) return;
         setSaving(true);
         try {
-            const updateData = { [balanceField]: parseFloat(newBalance) };
+            // ADD to existing balance, not replace
+            const currentValue = parseFloat(selectedUser?.balance?.[balanceField]?.toString() || "0");
+            const addAmount = parseFloat(newBalance);
+            const newValue = currentValue + addAmount;
+
+            const updateData = { [balanceField]: newValue };
             await updateUser(selectedUser.id, { balance: updateData });
 
             setSelectedUser({
                 ...selectedUser,
-                balance: { ...selectedUser.balance!, [balanceField]: parseFloat(newBalance) },
+                balance: { ...selectedUser.balance!, [balanceField]: newValue },
             });
             setShowBalanceModal(false);
             loadUsers();
@@ -369,10 +374,23 @@ export default function UsersPage() {
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
                     <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
                         <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-                            <h3 className="text-sm font-bold uppercase tracking-wider">Edit {balanceLabels[balanceField]}</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Add to Balance</h3>
                             <button onClick={() => setShowBalanceModal(false)}><X size={18} /></button>
                         </div>
                         <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Add To</label>
+                                <select
+                                    value={balanceField}
+                                    onChange={(e) => setBalanceField(e.target.value as 'available' | 'invested' | 'totalProfit' | 'bonus')}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                                >
+                                    <option value="available">Available Balance</option>
+                                    <option value="invested">Total Invested</option>
+                                    <option value="totalProfit">Total Profit</option>
+                                    <option value="bonus">Bonus</option>
+                                </select>
+                            </div>
                             <div>
                                 <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Amount (USD)</label>
                                 <input
@@ -381,6 +399,7 @@ export default function UsersPage() {
                                     onChange={(e) => setNewBalance(e.target.value)}
                                     className="w-full bg-zinc-900 border border-zinc-800 p-3 text-lg text-white focus:border-white outline-none"
                                     step="0.01"
+                                    placeholder="Enter amount"
                                 />
                             </div>
                             <button
@@ -388,7 +407,7 @@ export default function UsersPage() {
                                 disabled={saving}
                                 className="w-full bg-[#00C805] text-black py-3 font-bold hover:bg-[#00B004] transition-colors disabled:opacity-50"
                             >
-                                {saving ? "SAVING..." : "CONFIRM"}
+                                {saving ? "SAVING..." : "ADD BALANCE"}
                             </button>
                         </div>
                     </div>
