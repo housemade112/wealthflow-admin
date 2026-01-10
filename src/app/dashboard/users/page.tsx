@@ -145,11 +145,11 @@ export default function UsersPage() {
         setSaving(true);
         try {
             await createInvestment({
-                userId: selectedUser.id,
+                userIds: [selectedUser.id],
                 amount: parseFloat(investmentData.amount),
                 profitPercent: parseFloat(investmentData.profitPercent),
+                payoutFrequency: 1, // Default daily
                 durationDays: parseInt(investmentData.duration),
-                sourceBalance: investmentData.sourceBalance
             });
 
             alert("Investment created successfully!");
