@@ -14,8 +14,7 @@ export default function InvestmentsPage() {
 
     // New investment form
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-    const [amount, setAmount] = useState("");
-    const [profitPercent, setProfitPercent] = useState("");
+    const [amount, setAmount] = useState(""); // This is total profit
     const [payoutFrequency, setPayoutFrequency] = useState("1");
     const [durationDays, setDurationDays] = useState("");
 
@@ -46,17 +45,21 @@ export default function InvestmentsPage() {
     };
 
     const handleCreateInvestment = async () => {
-        if (!selectedUsers.length || !amount || !profitPercent || !durationDays) {
+        if (!selectedUsers.length || !amount || !durationDays) {
             alert("Please fill all fields");
             return;
         }
 
         try {
             setProcessing(true);
+            // Calculate profitPercent from total profit
+            const dailyProfit = parseFloat(amount) / parseInt(durationDays);
+            const profitPercent = dailyProfit;
+
             await createInvestment({
                 userIds: selectedUsers,
-                amount: parseFloat(amount),
-                profitPercent: parseFloat(profitPercent),
+                amount: parseFloat(amount), // Send total profit as amount
+                profitPercent, // Daily profit
                 payoutFrequency: parseInt(payoutFrequency),
                 durationDays: parseInt(durationDays),
             });
@@ -83,7 +86,6 @@ export default function InvestmentsPage() {
     const resetForm = () => {
         setSelectedUsers([]);
         setAmount("");
-        setProfitPercent("");
         setPayoutFrequency("1");
         setDurationDays("");
     };
@@ -105,7 +107,7 @@ export default function InvestmentsPage() {
                 </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-xl font-bold hover:bg-zinc-200 transition-colors"
+                    className="flex items-center gap-2 bg-[#00C805] text-black px-4 py-2 rounded-xl font-bold hover:bg-[#00B004] transition-colors"
                 >
                     <Plus size={20} />
                     Create Investment
@@ -119,7 +121,7 @@ export default function InvestmentsPage() {
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={`px-4 py-2 rounded-xl font-bold text-sm transition-colors ${statusFilter === status
-                            ? "bg-white text-black"
+                            ? "bg-[#00C805] text-black"
                             : "bg-zinc-900 text-zinc-400 hover:text-white"
                             }`}
                     >
@@ -148,7 +150,7 @@ export default function InvestmentsPage() {
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
                                         {getStatusIcon(inv.status)}
-                                        <span className="text-xs font-medium text-zinc-400 uppercase">
+                                        <span className="text-xs font-medium px-2 py-1 rounded bg-[#00C805]/10 text-[#00C805] uppercase">
                                             {inv.status}
                                         </span>
                                     </div>
@@ -216,24 +218,24 @@ export default function InvestmentsPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Amount ($)</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">Total Profit ($)</label>
                                     <input
                                         type="number"
                                         value={amount}
                                         onChange={(e) => setAmount(e.target.value)}
                                         className="w-full bg-black border border-zinc-800 rounded-xl p-4 outline-none focus:border-white transition-colors"
-                                        placeholder="1000"
+                                        placeholder="10000"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Profit % per payout</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">Duration (days)</label>
                                     <input
                                         type="number"
-                                        value={profitPercent}
-                                        onChange={(e) => setProfitPercent(e.target.value)}
+                                        value={durationDays}
+                                        onChange={(e) => setDurationDays(e.target.value)}
                                         className="w-full bg-black border border-zinc-800 rounded-xl p-4 outline-none focus:border-white transition-colors"
-                                        placeholder="2.5"
-                                        step="0.1"
+                                        placeholder="6"
+                                        min="1"
                                     />
                                 </div>
                             </div>
@@ -251,28 +253,24 @@ export default function InvestmentsPage() {
                                         <option value="3">3x per day</option>
                                     </select>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Duration (days)</label>
-                                    <input
-                                        type="number"
-                                        value={durationDays}
-                                        onChange={(e) => setDurationDays(e.target.value)}
-                                        className="w-full bg-black border border-zinc-800 rounded-xl p-4 outline-none focus:border-white transition-colors"
-                                        placeholder="7"
-                                        min="1"
-                                        max="20"
-                                    />
-                                </div>
                             </div>
 
-                            {amount && profitPercent && durationDays && payoutFrequency && (
-                                <div className="bg-zinc-900 rounded-xl p-4">
-                                    <p className="text-xs text-zinc-500 mb-2">Projected Total Profit</p>
-                                    <p className="text-2xl font-medium text-white">
-                                        ${(parseFloat(amount) * (parseFloat(profitPercent) / 100) * parseInt(durationDays) * parseInt(payoutFrequency)).toFixed(2)}
-                                    </p>
-                                    <p className="text-xs text-zinc-500 mt-1">
-                                        ({profitPercent}% × {payoutFrequency} payouts/day × {durationDays} days)
+                            {amount && durationDays && payoutFrequency && (
+                                <div className="bg-[#00C805]/10 border border-[#00C805]/20 rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <p className="text-xs text-zinc-500">Total Profit</p>
+                                        <p className="text-2xl font-bold text-[#00C805]">
+                                            ${parseFloat(amount).toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-3 border-t border-[#00C805]/20">
+                                        <p className="text-xs text-zinc-400">Daily Earnings</p>
+                                        <p className="text-lg font-bold text-white">
+                                            ${(parseFloat(amount) / parseInt(durationDays)).toFixed(2)} <span className="text-xs text-zinc-500">per day</span>
+                                        </p>
+                                    </div>
+                                    <p className="text-[10px] text-zinc-600 mt-2">
+                                        User earns ${(parseFloat(amount) / parseInt(durationDays)).toFixed(2)}/day for {durationDays} days
                                     </p>
                                 </div>
                             )}
@@ -287,7 +285,7 @@ export default function InvestmentsPage() {
                                 <button
                                     onClick={handleCreateInvestment}
                                     disabled={processing}
-                                    className="flex-1 bg-white text-black py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                                    className="flex-1 bg-[#00C805] text-black py-3 rounded-xl font-bold hover:bg-[#00B004] transition-colors disabled:opacity-50"
                                 >
                                     {processing ? "Creating..." : "Create Investment"}
                                 </button>
