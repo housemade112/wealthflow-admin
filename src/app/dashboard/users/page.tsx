@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword } from "@/lib/api";
+import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword, createInvestment } from "@/lib/api";
 import { Search, X, DollarSign, Ban, UserCheck, Loader2, ChevronRight, Mail, Trash2, MessageSquare, Key, TrendingUp } from "lucide-react";
 
 interface UserData {
@@ -144,10 +144,18 @@ export default function UsersPage() {
 
         setSaving(true);
         try {
-            // TODO: Create investment endpoint
+            await createInvestment({
+                userId: selectedUser.id,
+                amount: parseFloat(investmentData.amount),
+                profitPercent: parseFloat(investmentData.profitPercent),
+                durationDays: parseInt(investmentData.duration),
+                sourceBalance: investmentData.sourceBalance
+            });
+
             alert("Investment created successfully!");
             setShowInvestmentModal(false);
             setInvestmentData({ amount: "", profitPercent: "", duration: "", sourceBalance: "available" });
+            loadUsers();
         } catch (err) {
             console.error(err);
             alert("Failed to create investment");
