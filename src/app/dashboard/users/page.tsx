@@ -388,19 +388,21 @@ export default function UsersPage() {
                             {/* Add/Reduce Toggle */}
                             <div className="flex bg-zinc-900 rounded-lg p-1">
                                 <button
+                                    type="button"
                                     onClick={() => setBalanceOperation('add')}
                                     className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'add'
-                                            ? 'bg-[#00C805] text-black'
-                                            : 'text-zinc-500 hover:text-white'
+                                        ? 'bg-[#00C805] text-black'
+                                        : 'text-zinc-500 hover:text-white'
                                         }`}
                                 >
                                     ADD
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setBalanceOperation('reduce')}
                                     className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'reduce'
-                                            ? 'bg-red-500 text-white'
-                                            : 'text-zinc-500 hover:text-white'
+                                        ? 'bg-red-500 text-white'
+                                        : 'text-zinc-500 hover:text-white'
                                         }`}
                                 >
                                     REDUCE
@@ -434,8 +436,8 @@ export default function UsersPage() {
                                 onClick={handleUpdateBalance}
                                 disabled={saving}
                                 className={`w-full py-3 font-bold transition-colors disabled:opacity-50 ${balanceOperation === 'add'
-                                        ? 'bg-[#00C805] text-black hover:bg-[#00B004]'
-                                        : 'bg-red-500 text-white hover:bg-red-600'
+                                    ? 'bg-[#00C805] text-black hover:bg-[#00B004]'
+                                    : 'bg-red-500 text-white hover:bg-red-600'
                                     }`}
                             >
                                 {saving ? "SAVING..." : balanceOperation === 'add' ? "ADD BALANCE" : "REDUCE BALANCE"}
