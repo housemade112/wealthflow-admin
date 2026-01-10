@@ -14,7 +14,8 @@ export default function InvestmentsPage() {
 
     // New investment form
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-    const [amount, setAmount] = useState(""); // This is total profit
+    const [amount, setAmount] = useState(""); // Initial investment amount
+    const [profitPercent, setProfitPercent] = useState(""); // Profit % per payout
     const [payoutFrequency, setPayoutFrequency] = useState("1");
     const [durationDays, setDurationDays] = useState("");
 
@@ -45,21 +46,17 @@ export default function InvestmentsPage() {
     };
 
     const handleCreateInvestment = async () => {
-        if (!selectedUsers.length || !amount || !durationDays) {
+        if (!selectedUsers.length || !amount || !profitPercent || !durationDays) {
             alert("Please fill all fields");
             return;
         }
 
         try {
             setProcessing(true);
-            // Calculate profitPercent from total profit
-            const dailyProfit = parseFloat(amount) / parseInt(durationDays);
-            const profitPercent = dailyProfit;
-
             await createInvestment({
                 userIds: selectedUsers,
-                amount: parseFloat(amount), // Send total profit as amount
-                profitPercent, // Daily profit
+                amount: parseFloat(amount),
+                profitPercent: parseFloat(profitPercent),
                 payoutFrequency: parseInt(payoutFrequency),
                 durationDays: parseInt(durationDays),
             });
@@ -86,6 +83,7 @@ export default function InvestmentsPage() {
     const resetForm = () => {
         setSelectedUsers([]);
         setAmount("");
+        setProfitPercent("");
         setPayoutFrequency("1");
         setDurationDays("");
     };
@@ -218,7 +216,7 @@ export default function InvestmentsPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Total Profit ($)</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">Initial Amount ($)</label>
                                     <input
                                         type="number"
                                         value={amount}
@@ -228,6 +226,20 @@ export default function InvestmentsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">Profit % Per Payout</label>
+                                    <input
+                                        type="number"
+                                        value={profitPercent}
+                                        onChange={(e) => setProfitPercent(e.target.value)}
+                                        className="w-full bg-black border border-zinc-800 rounded-xl p-4 outline-none focus:border-white transition-colors"
+                                        placeholder="1.8"
+                                        step="0.1"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
                                     <label className="text-xs font-bold text-zinc-500 uppercase">Duration (days)</label>
                                     <input
                                         type="number"
@@ -236,11 +248,9 @@ export default function InvestmentsPage() {
                                         className="w-full bg-black border border-zinc-800 rounded-xl p-4 outline-none focus:border-white transition-colors"
                                         placeholder="6"
                                         min="1"
+                                        max="20"
                                     />
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-zinc-500 uppercase">Payouts per day</label>
                                     <select
@@ -255,22 +265,26 @@ export default function InvestmentsPage() {
                                 </div>
                             </div>
 
-                            {amount && durationDays && payoutFrequency && (
-                                <div className="bg-[#00C805]/10 border border-[#00C805]/20 rounded-xl p-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <p className="text-xs text-zinc-500">Total Profit</p>
+                            {amount && profitPercent && durationDays && payoutFrequency && (
+                                <div className="bg-[#00C805]/10 border border-[#00C805]/20 rounded-xl p-4 space-y-3">
+                                    <div className="flex items-center justify-between pb-3 border-b border-[#00C805]/20">
+                                        <p className="text-xs text-zinc-500">Total Projected Profit</p>
                                         <p className="text-2xl font-bold text-[#00C805]">
-                                            ${parseFloat(amount).toLocaleString()}
+                                            ${(parseFloat(amount) * (parseFloat(profitPercent) / 100) * parseInt(payoutFrequency) * parseInt(durationDays)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </p>
                                     </div>
-                                    <div className="flex items-center justify-between pt-3 border-t border-[#00C805]/20">
-                                        <p className="text-xs text-zinc-400">Daily Earnings</p>
-                                        <p className="text-lg font-bold text-white">
-                                            ${(parseFloat(amount) / parseInt(durationDays)).toFixed(2)} <span className="text-xs text-zinc-500">per day</span>
-                                        </p>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-[10px] text-zinc-600 mb-1">Per Payout</p>
+                                            <p className="font-bold text-white">${(parseFloat(amount) * (parseFloat(profitPercent) / 100)).toFixed(2)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-zinc-600 mb-1">Per Day</p>
+                                            <p className="font-bold text-white">${(parseFloat(amount) * (parseFloat(profitPercent) / 100) * parseInt(payoutFrequency)).toFixed(2)}</p>
+                                        </div>
                                     </div>
-                                    <p className="text-[10px] text-zinc-600 mt-2">
-                                        User earns ${(parseFloat(amount) / parseInt(durationDays)).toFixed(2)}/day for {durationDays} days
+                                    <p className="text-[10px] text-zinc-600 pt-2 border-t border-[#00C805]/20">
+                                        {profitPercent}% × {payoutFrequency}x/day × {durationDays} days = {(parseFloat(profitPercent) * parseInt(payoutFrequency) * parseInt(durationDays)).toFixed(1)}% total return
                                     </p>
                                 </div>
                             )}
