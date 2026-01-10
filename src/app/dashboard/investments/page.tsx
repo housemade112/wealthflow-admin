@@ -248,20 +248,18 @@ export default function InvestmentsPage() {
                                         className="w-full bg-black border border-zinc-800 rounded-xl p-4 outline-none focus:border-white transition-colors"
                                         placeholder="6"
                                         min="1"
-                                        max="20"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-zinc-500 uppercase">Payouts per day</label>
-                                    <select
+                                    <input
+                                        type="number"
                                         value={payoutFrequency}
                                         onChange={(e) => setPayoutFrequency(e.target.value)}
                                         className="w-full bg-black border border-zinc-800 rounded-xl p-4 outline-none focus:border-white transition-colors"
-                                    >
-                                        <option value="1">1x per day</option>
-                                        <option value="2">2x per day</option>
-                                        <option value="3">3x per day</option>
-                                    </select>
+                                        placeholder="2"
+                                        min="1"
+                                    />
                                 </div>
                             </div>
 
