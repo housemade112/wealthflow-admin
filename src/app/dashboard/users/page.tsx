@@ -233,20 +233,42 @@ export default function UsersPage() {
                     ) : users.length === 0 ? (
                         <div className="p-12 text-center text-zinc-500 text-sm">No users found</div>
                     ) : (
-                        <div className="divide-y divide-zinc-900">
+                        <div className="p-4 space-y-2">
                             {users.map((user) => (
                                 <button
                                     key={user.id}
                                     onClick={() => selectUser(user)}
-                                    className={`w-full p-4 text-left hover:bg-zinc-900 transition-colors ${selectedUser?.id === user.id ? 'bg-zinc-900' : ''}`}
+                                    className={`w-full p-4 rounded-lg text-left transition-all ${selectedUser?.id === user.id
+                                            ? 'bg-zinc-900 border border-zinc-700 shadow-lg'
+                                            : 'bg-zinc-950 border border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900'
+                                        }`}
                                 >
-                                    <p className="text-white font-medium text-sm mb-1">{user.email}</p>
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <span className="text-zinc-600">{user.fullName || 'No name'}</span>
-                                        <span className="text-zinc-800">•</span>
-                                        <span className={user.status === 'ACTIVE' ? 'text-white' : 'text-zinc-600'}>
+                                    <div className="flex items-center gap-3">
+                                        {/* Avatar */}
+                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-400 flex-shrink-0">
+                                            {(user.fullName || user.email).charAt(0).toUpperCase()}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-white font-medium text-sm truncate">{user.email}</p>
+                                            <div className="flex items-center gap-2 text-xs mt-0.5">
+                                                <span className="text-zinc-500 truncate">{user.fullName || 'No name'}</span>
+                                                {user.balance && (
+                                                    <>
+                                                        <span className="text-zinc-800">•</span>
+                                                        <span className="text-emerald-500">${user.balance.available?.toFixed(2) || '0.00'}</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Status badge */}
+                                        <div className={`px-2 py-1 rounded text-[10px] font-medium ${user.status === 'ACTIVE'
+                                                ? 'bg-emerald-500/10 text-emerald-500'
+                                                : 'bg-zinc-800 text-zinc-500'
+                                            }`}>
                                             {user.status}
-                                        </span>
+                                        </div>
                                     </div>
                                 </button>
                             ))}
