@@ -69,6 +69,12 @@ export const sendNotification = (id: string, title: string, message: string) =>
         body: JSON.stringify({ title, message }),
     });
 
+export const resetPassword = (id: string, newPassword: string) =>
+    apiRequest(`/api/admin/users/${id}/reset-password`, {
+        method: 'POST',
+        body: JSON.stringify({ newPassword }),
+    });
+
 // Deposits
 export const getDeposits = (status?: string) =>
     apiRequest(`/api/admin/deposits${status ? `?status=${status}` : ''}`);

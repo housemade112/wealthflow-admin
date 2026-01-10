@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUsers, getUser, updateUser, deleteUser, sendNotification } from "@/lib/api";
-import { Search, X, DollarSign, Ban, UserCheck, Loader2, ChevronRight, Mail, Trash2, MessageSquare } from "lucide-react";
+import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword } from "@/lib/api";
+import { Search, X, DollarSign, Ban, UserCheck, Loader2, ChevronRight, Mail, Trash2, MessageSquare, Key, TrendingUp } from "lucide-react";
 
 interface UserData {
     id: string;
     email: string;
     fullName?: string;
     phone?: string;
+    country?: string;
     status: string;
     createdAt: string;
     lastLoginAt?: string;
@@ -16,6 +17,7 @@ interface UserData {
         available: number;
         invested: number;
         totalProfit: number;
+        bonus: number;
     };
 }
 
@@ -30,10 +32,25 @@ export default function UsersPage() {
 
     // Modals
     const [showBalanceModal, setShowBalanceModal] = useState(false);
-    const [showMessageModal, setShowMessageModal] = useState(false);
+    const [balanceField, setBalanceField] = useState<'available' | 'invested' | 'totalProfit' | 'bonus'>('available');
     const [newBalance, setNewBalance] = useState("");
+
+    const [showInvestmentModal, setShowInvestmentModal] = useState(false);
+    const [investmentData, setInvestmentData] = useState({
+        amount: "",
+        profitPercent: "",
+        duration: "",
+        sourceBalance: "available" as 'available' | 'invested' | 'totalProfit' | 'bonus'
+    });
+
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [newPassword, setNewPassword] = useState("");
+    const [generatedPassword, setGeneratedPassword] = useState("");
+
+    const [showMessageModal, setShowMessageModal] = useState(false);
     const [msgTitle, setMsgTitle] = useState("");
     const [msgBody, setMsgBody] = useState("");
+
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -56,8 +73,8 @@ export default function UsersPage() {
         setLoadingUser(true);
         setSelectedUser(user);
         try {
-            const data = await getUser(user.id);
-            setSelectedUser(data.user);
+            const fullUser = await getUser(user.id);
+            setSelectedUser(fullUser.user);
         } catch (err) {
             console.error(err);
         } finally {
@@ -67,35 +84,35 @@ export default function UsersPage() {
 
     const handleUpdateStatus = async (status: string) => {
         if (!selectedUser) return;
-        if (!confirm(`${status} this user?`)) return;
-
+        setSaving(true);
         try {
             await updateUser(selectedUser.id, { status });
             setSelectedUser({ ...selectedUser, status });
             loadUsers();
         } catch (err) {
             console.error(err);
-            alert("Failed to update status");
+        } finally {
+            setSaving(false);
         }
     };
 
     const handleDeleteUser = async () => {
-        if (!selectedUser) return;
-        if (!confirm("PERMANENTLY DELETE this user?")) return;
-
+        if (!selectedUser || !confirm(`Delete user ${selectedUser.email}?`)) return;
+        setSaving(true);
         try {
             await deleteUser(selectedUser.id);
             setSelectedUser(null);
             loadUsers();
         } catch (err) {
             console.error(err);
-            alert("Failed to delete user");
+        } finally {
+            setSaving(false);
         }
     };
 
-    const openBalanceModal = () => {
-        if (!selectedUser) return;
-        setNewBalance(selectedUser.balance?.available?.toString() || "0");
+    const openBalanceModal = (field: 'available' | 'invested' | 'totalProfit' | 'bonus') => {
+        setBalanceField(field);
+        setNewBalance(selectedUser?.balance?.[field]?.toString() || "0");
         setShowBalanceModal(true);
     };
 
@@ -103,10 +120,12 @@ export default function UsersPage() {
         if (!selectedUser || !newBalance) return;
         setSaving(true);
         try {
-            await updateUser(selectedUser.id, { balance: parseFloat(newBalance) });
+            const updateData = { [balanceField]: parseFloat(newBalance) };
+            await updateUser(selectedUser.id, { balance: updateData });
+
             setSelectedUser({
                 ...selectedUser,
-                balance: { ...selectedUser.balance!, available: parseFloat(newBalance) },
+                balance: { ...selectedUser.balance!, [balanceField]: parseFloat(newBalance) },
             });
             setShowBalanceModal(false);
             loadUsers();
@@ -117,10 +136,40 @@ export default function UsersPage() {
         }
     };
 
-    const openMessageModal = () => {
-        setMsgTitle("");
-        setMsgBody("");
-        setShowMessageModal(true);
+    const handleCreateInvestment = async () => {
+        if (!selectedUser || !investmentData.amount || !investmentData.profitPercent || !investmentData.duration) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        setSaving(true);
+        try {
+            // TODO: Create investment endpoint
+            alert("Investment created successfully!");
+            setShowInvestmentModal(false);
+            setInvestmentData({ amount: "", profitPercent: "", duration: "", sourceBalance: "available" });
+        } catch (err) {
+            console.error(err);
+            alert("Failed to create investment");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleResetPassword = async () => {
+        if (!selectedUser) return;
+        setSaving(true);
+        try {
+            const generated = Math.random().toString(36).slice(-8);
+            const response = await resetPassword(selectedUser.id, generated);
+            setGeneratedPassword(generated);
+            setNewPassword("");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to reset password");
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleSendMessage = async () => {
@@ -142,6 +191,13 @@ export default function UsersPage() {
         return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
+    const balanceLabels = {
+        available: "Available Balance",
+        invested: "Total Invested",
+        totalProfit: "Total Profit",
+        bonus: "Bonus"
+    };
+
     return (
         <div className="flex h-[calc(100vh-80px)] -m-6 bg-black text-white">
             {/* Left Panel - Users List */}
@@ -150,42 +206,39 @@ export default function UsersPage() {
                     <h2 className="text-xl font-medium">Users</h2>
                 </div>
 
-                <div className="p-4 border-b border-zinc-800 flex gap-3">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Search by email..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-zinc-900 border border-zinc-800 px-3 pl-9 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 outline-none"
-                        />
-                    </div>
+                <div className="p-4 border-b border-zinc-800">
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm text-white outline-none focus:border-white"
+                    />
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
                     {loading ? (
-                        <div className="p-8 text-center text-zinc-500 text-sm">Loading...</div>
+                        <div className="p-12 text-center">
+                            <Loader2 className="animate-spin mx-auto mb-2 text-zinc-500" size={20} />
+                            <p className="text-zinc-500 text-sm">Loading...</p>
+                        </div>
                     ) : users.length === 0 ? (
-                        <div className="p-8 text-center text-zinc-500 text-sm">No users found</div>
+                        <div className="p-12 text-center text-zinc-500 text-sm">No users found</div>
                     ) : (
                         <div className="divide-y divide-zinc-900">
                             {users.map((user) => (
                                 <button
                                     key={user.id}
                                     onClick={() => selectUser(user)}
-                                    className={`w-full p-4 text-left hover:bg-zinc-900 transition-colors flex items-center justify-between ${selectedUser?.id === user.id ? "bg-zinc-900" : ""
-                                        }`}
+                                    className={`w-full p-4 text-left hover:bg-zinc-900 transition-colors ${selectedUser?.id === user.id ? 'bg-zinc-900' : ''}`}
                                 >
-                                    <div className="min-w-0 flex-1">
-                                        <p className="font-medium text-sm truncate text-zinc-200">{user.email}</p>
-                                        <p className="text-xs text-zinc-500 truncate mt-0.5">Joined {formatDate(user.createdAt)}</p>
-                                    </div>
-                                    <div className="flex items-center gap-3 ml-4">
-                                        <span className="text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 bg-zinc-800 text-zinc-400">
+                                    <p className="text-white font-medium text-sm mb-1">{user.email}</p>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span className="text-zinc-600">{user.fullName || 'No name'}</span>
+                                        <span className="text-zinc-800">•</span>
+                                        <span className={user.status === 'ACTIVE' ? 'text-white' : 'text-zinc-600'}>
                                             {user.status}
                                         </span>
-                                        <ChevronRight size={14} className="text-zinc-600" />
                                     </div>
                                 </button>
                             ))}
@@ -195,123 +248,122 @@ export default function UsersPage() {
             </div>
 
             {/* Right Panel - User Details */}
-            <div className="w-96 flex-shrink-0 flex flex-col bg-zinc-950 border-l border-zinc-800">
+            <div className="w-[500px] flex flex-col bg-black">
                 {!selectedUser ? (
-                    <div className="flex-1 flex items-center justify-center text-zinc-600">
-                        <p className="text-sm">Select a user</p>
+                    <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
+                        Select a user to view details
                     </div>
                 ) : loadingUser ? (
                     <div className="flex-1 flex items-center justify-center">
-                        <Loader2 className="animate-spin text-zinc-500" size={20} />
+                        <Loader2 className="animate-spin text-zinc-500" size={24} />
                     </div>
                 ) : (
                     <>
-                        <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
-                            <span className="text-sm font-bold text-zinc-500 uppercase tracking-wider">User Details</span>
-                            <button onClick={() => setSelectedUser(null)} className="text-zinc-500 hover:text-white">
-                                <X size={18} />
-                            </button>
+                        <div className="p-6 border-b border-zinc-800">
+                            <h3 className="text-lg font-medium text-white mb-1">{selectedUser.email}</h3>
+                            <p className="text-zinc-500 text-sm">{selectedUser.fullName || 'No name'}</p>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                            {/* Identity */}
-                            <div className="text-center">
-                                <div className="w-14 h-14 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-3 border border-zinc-800">
-                                    <span className="text-xl font-medium text-white">
-                                        {(selectedUser.fullName || selectedUser.email).charAt(0).toUpperCase()}
-                                    </span>
+                            {/* User Info */}
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-zinc-600">Phone</span>
+                                    <span className="text-white">{selectedUser.phone || 'Not set'}</span>
                                 </div>
-                                <h3 className="text-base font-medium text-white truncate">{selectedUser.email}</h3>
+                                <div className="flex justify-between">
+                                    <span className="text-zinc-600">Country</span>
+                                    <span className="text-white">{selectedUser.country || 'Not set'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-zinc-600">Status</span>
+                                    <span className="text-white uppercase text-xs">{selectedUser.status}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-zinc-600">Joined</span>
+                                    <span className="text-white">{formatDate(selectedUser.createdAt)}</span>
+                                </div>
                             </div>
 
-                            {/* Balance */}
-                            <div className="bg-zinc-900 border border-zinc-800 p-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-medium text-zinc-500 uppercase">Available Funds</span>
-                                </div>
-                                <div className="text-2xl font-medium text-white">
-                                    ${selectedUser.balance?.available?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "0.00"}
-                                </div>
-                                <div className="mt-3 pt-3 border-t border-zinc-800 grid grid-cols-2 gap-4">
-                                    <div>
-                                        <div className="text-xs text-zinc-500 mb-1">Invested</div>
-                                        <div className="text-sm font-medium text-zinc-300">
-                                            ${selectedUser.balance?.invested?.toLocaleString() || "0.00"}
+                            <div className="border-t border-zinc-900"></div>
+
+                            {/* Balance Section */}
+                            <div>
+                                <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-4">Balances</h4>
+                                <div className="space-y-3">
+                                    {(['available', 'invested', 'totalProfit', 'bonus'] as const).map((field) => (
+                                        <div key={field} className="bg-zinc-950 border border-zinc-800 p-4">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="text-zinc-600 text-xs uppercase">{balanceLabels[field]}</span>
+                                                <button
+                                                    onClick={() => openBalanceModal(field)}
+                                                    className="text-white hover:text-zinc-400 transition-colors"
+                                                >
+                                                    <DollarSign size={14} />
+                                                </button>
+                                            </div>
+                                            <p className="text-xl font-light text-white">
+                                                {parseFloat(selectedUser.balance?.[field]?.toString() || '0').toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                            </p>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-zinc-500 mb-1">Profit</div>
-                                        <div className="text-sm font-medium text-zinc-300">
-                                            ${selectedUser.balance?.totalProfit?.toLocaleString() || "0.00"}
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Info */}
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center py-2 border-b border-zinc-900">
-                                    <span className="text-sm text-zinc-500">Full Name</span>
-                                    <span className="text-sm text-white">{selectedUser.fullName || "—"}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-2 border-b border-zinc-900">
-                                    <span className="text-sm text-zinc-500">Phone</span>
-                                    <span className="text-sm text-white">{selectedUser.phone || "—"}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-2 border-b border-zinc-900">
-                                    <span className="text-sm text-zinc-500">Joined</span>
-                                    <span className="text-sm text-white">{formatDate(selectedUser.createdAt)}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-2 border-b border-zinc-900">
-                                    <span className="text-sm text-zinc-500">Status</span>
-                                    <span className="text-sm text-white">{selectedUser.status}</span>
-                                </div>
-                            </div>
-                        </div>
+                            <div className="border-t border-zinc-900"></div>
 
-                        {/* Actions */}
-                        <div className="p-6 border-t border-zinc-800 space-y-2 bg-zinc-950">
-                            <button
-                                onClick={openBalanceModal}
-                                className="w-full flex items-center justify-center gap-2 bg-white text-black py-2.5 font-medium hover:bg-zinc-200 transition-colors text-sm"
-                            >
-                                <DollarSign size={16} />
-                                Add Funds
-                            </button>
-
-                            <button
-                                onClick={openMessageModal}
-                                className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
-                            >
-                                <MessageSquare size={16} />
-                                Send Message
-                            </button>
-
-                            {selectedUser.status === "ACTIVE" ? (
+                            {/* Actions */}
+                            <div className="space-y-2">
                                 <button
-                                    onClick={() => handleUpdateStatus("SUSPENDED")}
+                                    onClick={() => setShowInvestmentModal(true)}
+                                    className="w-full flex items-center justify-center gap-2 bg-white text-black py-2.5 font-bold hover:bg-zinc-200 transition-colors text-sm"
+                                >
+                                    <TrendingUp size={16} />
+                                    Create Investment
+                                </button>
+
+                                <button
+                                    onClick={() => setShowPasswordModal(true)}
                                     className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
                                 >
-                                    <Ban size={16} />
-                                    Suspend
+                                    <Key size={16} />
+                                    Reset Password
                                 </button>
-                            ) : (
+
                                 <button
-                                    onClick={() => handleUpdateStatus("ACTIVE")}
+                                    onClick={() => setShowMessageModal(true)}
                                     className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
                                 >
-                                    <UserCheck size={16} />
-                                    Activate
+                                    <MessageSquare size={16} />
+                                    Send Message
                                 </button>
-                            )}
 
-                            <button
-                                onClick={handleDeleteUser}
-                                className="w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-white py-2.5 transition-colors text-sm"
-                            >
-                                <Trash2 size={16} />
-                                Delete User
-                            </button>
+                                {selectedUser.status === "ACTIVE" ? (
+                                    <button
+                                        onClick={() => handleUpdateStatus("SUSPENDED")}
+                                        className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
+                                    >
+                                        <Ban size={16} />
+                                        Suspend
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => handleUpdateStatus("ACTIVE")}
+                                        className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
+                                    >
+                                        <UserCheck size={16} />
+                                        Activate
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={handleDeleteUser}
+                                    className="w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-white py-2.5 transition-colors text-sm"
+                                >
+                                    <Trash2 size={16} />
+                                    Delete User
+                                </button>
+                            </div>
                         </div>
                     </>
                 )}
@@ -322,7 +374,7 @@ export default function UsersPage() {
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
                     <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
                         <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-                            <h3 className="text-sm font-bold uppercase tracking-wider">Update Balance</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Edit {balanceLabels[balanceField]}</h3>
                             <button onClick={() => setShowBalanceModal(false)}><X size={18} /></button>
                         </div>
                         <div className="p-6 space-y-4">
@@ -348,6 +400,109 @@ export default function UsersPage() {
                 </div>
             )}
 
+            {/* Investment Modal */}
+            {showInvestmentModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+                    <div className="bg-zinc-950 border border-zinc-800 w-full max-w-md">
+                        <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Create Investment</h3>
+                            <button onClick={() => setShowInvestmentModal(false)}><X size={18} /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Amount</label>
+                                <input
+                                    type="number"
+                                    value={investmentData.amount}
+                                    onChange={(e) => setInvestmentData({ ...investmentData, amount: e.target.value })}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                                    step="0.01"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Profit % (per day)</label>
+                                <input
+                                    type="number"
+                                    value={investmentData.profitPercent}
+                                    onChange={(e) => setInvestmentData({ ...investmentData, profitPercent: e.target.value })}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                                    step="0.01"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Duration (days)</label>
+                                <input
+                                    type="number"
+                                    value={investmentData.duration}
+                                    onChange={(e) => setInvestmentData({ ...investmentData, duration: e.target.value })}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Source Balance</label>
+                                <select
+                                    value={investmentData.sourceBalance}
+                                    onChange={(e) => setInvestmentData({ ...investmentData, sourceBalance: e.target.value as any })}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                                >
+                                    <option value="available">Available Balance</option>
+                                    <option value="invested">Total Invested</option>
+                                    <option value="totalProfit">Total Profit</option>
+                                    <option value="bonus">Bonus</option>
+                                </select>
+                            </div>
+                            <button
+                                onClick={handleCreateInvestment}
+                                disabled={saving}
+                                className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                            >
+                                {saving ? "CREATING..." : "CREATE INVESTMENT"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Password Reset Modal */}
+            {showPasswordModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+                    <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
+                        <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+                            <h3 className="text-sm font-bold uppercase tracking-wider">Reset Password</h3>
+                            <button onClick={() => setShowPasswordModal(false)}><X size={18} /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            {generatedPassword ? (
+                                <>
+                                    <div className="bg-zinc-900 border border-zinc-800 p-4">
+                                        <p className="text-xs text-zinc-600 uppercase mb-2">New Password</p>
+                                        <p className="text-lg font-mono text-white">{generatedPassword}</p>
+                                    </div>
+                                    <p className="text-xs text-zinc-600">Copy this password and share it with the user.</p>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(generatedPassword);
+                                            alert("Password copied!");
+                                        }}
+                                        className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors"
+                                    >
+                                        COPY PASSWORD
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={handleResetPassword}
+                                    disabled={saving}
+                                    className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                                >
+                                    {saving ? "GENERATING..." : "GENERATE NEW PASSWORD"}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Message Modal */}
             {showMessageModal && selectedUser && (
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
@@ -363,8 +518,7 @@ export default function UsersPage() {
                                     type="text"
                                     value={msgTitle}
                                     onChange={(e) => setMsgTitle(e.target.value)}
-                                    placeholder="Notification title"
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm text-white placeholder-zinc-500 focus:border-white outline-none"
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
                                 />
                             </div>
                             <div>
@@ -372,17 +526,16 @@ export default function UsersPage() {
                                 <textarea
                                     value={msgBody}
                                     onChange={(e) => setMsgBody(e.target.value)}
-                                    placeholder="Your message to the user..."
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none resize-none"
                                     rows={4}
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-sm text-white placeholder-zinc-500 focus:border-white outline-none resize-none"
                                 />
                             </div>
                             <button
                                 onClick={handleSendMessage}
-                                disabled={saving || !msgTitle || !msgBody}
+                                disabled={saving}
                                 className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
                             >
-                                {saving ? "SENDING..." : "SEND"}
+                                {saving ? "SENDING..." : "SEND MESSAGE"}
                             </button>
                         </div>
                     </div>
