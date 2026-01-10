@@ -310,6 +310,14 @@ export default function UsersPage() {
                             {/* Actions */}
                             <div className="space-y-2">
                                 <button
+                                    onClick={() => openBalanceModal('available')}
+                                    className="w-full flex items-center justify-center gap-2 bg-[#00C805] text-black py-2.5 font-bold hover:bg-[#00B004] transition-colors text-sm"
+                                >
+                                    <DollarSign size={16} />
+                                    Add Balance
+                                </button>
+
+                                <button
                                     onClick={() => setShowPasswordModal(true)}
                                     className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
                                 >
@@ -378,7 +386,7 @@ export default function UsersPage() {
                             <button
                                 onClick={handleUpdateBalance}
                                 disabled={saving}
-                                className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                                className="w-full bg-[#00C805] text-black py-3 font-bold hover:bg-[#00B004] transition-colors disabled:opacity-50"
                             >
                                 {saving ? "SAVING..." : "CONFIRM"}
                             </button>
