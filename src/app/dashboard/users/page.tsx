@@ -33,6 +33,7 @@ export default function UsersPage() {
     // Modals
     const [showBalanceModal, setShowBalanceModal] = useState(false);
     const [balanceField, setBalanceField] = useState<'available' | 'invested' | 'totalProfit' | 'bonus'>('available');
+    const [balanceOperation, setBalanceOperation] = useState<'add' | 'reduce'>('add');
     const [newBalance, setNewBalance] = useState("");
 
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -104,7 +105,8 @@ export default function UsersPage() {
 
     const openBalanceModal = (field: 'available' | 'invested' | 'totalProfit' | 'bonus') => {
         setBalanceField(field);
-        setNewBalance(""); // Start empty - we're ADDING, not replacing
+        setBalanceOperation('add'); // Default to add
+        setNewBalance("");
         setShowBalanceModal(true);
     };
 
@@ -112,10 +114,13 @@ export default function UsersPage() {
         if (!selectedUser || !newBalance) return;
         setSaving(true);
         try {
-            // ADD to existing balance, not replace
             const currentValue = parseFloat(selectedUser?.balance?.[balanceField]?.toString() || "0");
-            const addAmount = parseFloat(newBalance);
-            const newValue = currentValue + addAmount;
+            const changeAmount = parseFloat(newBalance);
+
+            // ADD or REDUCE based on operation
+            const newValue = balanceOperation === 'add'
+                ? currentValue + changeAmount
+                : Math.max(0, currentValue - changeAmount); // Don't go below 0
 
             const updateData = { [balanceField]: newValue };
             await updateUser(selectedUser.id, { balance: updateData });
@@ -374,12 +379,35 @@ export default function UsersPage() {
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
                     <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
                         <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-                            <h3 className="text-sm font-bold uppercase tracking-wider">Add to Balance</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-wider">
+                                {balanceOperation === 'add' ? 'Add to' : 'Reduce'} Balance
+                            </h3>
                             <button onClick={() => setShowBalanceModal(false)}><X size={18} /></button>
                         </div>
                         <div className="p-6 space-y-4">
+                            {/* Add/Reduce Toggle */}
+                            <div className="flex bg-zinc-900 rounded-lg p-1">
+                                <button
+                                    onClick={() => setBalanceOperation('add')}
+                                    className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'add'
+                                            ? 'bg-[#00C805] text-black'
+                                            : 'text-zinc-500 hover:text-white'
+                                        }`}
+                                >
+                                    ADD
+                                </button>
+                                <button
+                                    onClick={() => setBalanceOperation('reduce')}
+                                    className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'reduce'
+                                            ? 'bg-red-500 text-white'
+                                            : 'text-zinc-500 hover:text-white'
+                                        }`}
+                                >
+                                    REDUCE
+                                </button>
+                            </div>
                             <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Add To</label>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Balance Field</label>
                                 <select
                                     value={balanceField}
                                     onChange={(e) => setBalanceField(e.target.value as 'available' | 'invested' | 'totalProfit' | 'bonus')}
@@ -405,9 +433,12 @@ export default function UsersPage() {
                             <button
                                 onClick={handleUpdateBalance}
                                 disabled={saving}
-                                className="w-full bg-[#00C805] text-black py-3 font-bold hover:bg-[#00B004] transition-colors disabled:opacity-50"
+                                className={`w-full py-3 font-bold transition-colors disabled:opacity-50 ${balanceOperation === 'add'
+                                        ? 'bg-[#00C805] text-black hover:bg-[#00B004]'
+                                        : 'bg-red-500 text-white hover:bg-red-600'
+                                    }`}
                             >
-                                {saving ? "SAVING..." : "ADD BALANCE"}
+                                {saving ? "SAVING..." : balanceOperation === 'add' ? "ADD BALANCE" : "REDUCE BALANCE"}
                             </button>
                         </div>
                     </div>
