@@ -157,3 +157,18 @@ export const deleteWallet = (id: string) =>
         method: 'DELETE',
     });
 
+// Investments
+export const createInvestment = (data: {
+    userId: string;
+    amount: number;
+    profitPercent: number;
+    durationDays: number;
+    sourceBalance?: string;
+}) =>
+    apiRequest('/api/admin/investments', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+
+export const getInvestments = (userId?: string) =>
+    apiRequest(`/api/admin/investments${userId ? `?userId=${userId}` : ''}`);
