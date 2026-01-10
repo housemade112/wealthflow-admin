@@ -239,8 +239,8 @@ export default function UsersPage() {
                                     key={user.id}
                                     onClick={() => selectUser(user)}
                                     className={`w-full p-4 rounded-lg text-left transition-all ${selectedUser?.id === user.id
-                                            ? 'bg-zinc-900 border border-zinc-700 shadow-lg'
-                                            : 'bg-zinc-950 border border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900'
+                                        ? 'bg-zinc-900 border border-zinc-700 shadow-lg'
+                                        : 'bg-zinc-950 border border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -264,8 +264,8 @@ export default function UsersPage() {
 
                                         {/* Status badge */}
                                         <div className={`px-2 py-1 rounded text-[10px] font-medium ${user.status === 'ACTIVE'
-                                                ? 'bg-emerald-500/10 text-emerald-500'
-                                                : 'bg-zinc-800 text-zinc-500'
+                                            ? 'bg-emerald-500/10 text-emerald-500'
+                                            : 'bg-zinc-800 text-zinc-500'
                                             }`}>
                                             {user.status}
                                         </div>
