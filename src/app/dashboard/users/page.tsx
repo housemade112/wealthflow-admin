@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword, createInvestment } from "@/lib/api";
-import { Search, X, DollarSign, Ban, UserCheck, Loader2, ChevronRight, Mail, Trash2, MessageSquare, Key, TrendingUp } from "lucide-react";
+import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword } from "@/lib/api";
+import { DollarSign, Ban, UserCheck, Loader2, Mail, Trash2, MessageSquare, Key, X } from "lucide-react";
 
 interface UserData {
     id: string;
@@ -34,14 +34,6 @@ export default function UsersPage() {
     const [showBalanceModal, setShowBalanceModal] = useState(false);
     const [balanceField, setBalanceField] = useState<'available' | 'invested' | 'totalProfit' | 'bonus'>('available');
     const [newBalance, setNewBalance] = useState("");
-
-    const [showInvestmentModal, setShowInvestmentModal] = useState(false);
-    const [investmentData, setInvestmentData] = useState({
-        amount: "",
-        profitPercent: "",
-        duration: "",
-        sourceBalance: "available" as 'available' | 'invested' | 'totalProfit' | 'bonus'
-    });
 
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [newPassword, setNewPassword] = useState("");
@@ -136,33 +128,6 @@ export default function UsersPage() {
         }
     };
 
-    const handleCreateInvestment = async () => {
-        if (!selectedUser || !investmentData.amount || !investmentData.profitPercent || !investmentData.duration) {
-            alert("Please fill all fields");
-            return;
-        }
-
-        setSaving(true);
-        try {
-            await createInvestment({
-                userIds: [selectedUser.id],
-                amount: parseFloat(investmentData.amount),
-                profitPercent: parseFloat(investmentData.profitPercent),
-                payoutFrequency: 1, // Default daily
-                durationDays: parseInt(investmentData.duration),
-            });
-
-            alert("Investment created successfully!");
-            setShowInvestmentModal(false);
-            setInvestmentData({ amount: "", profitPercent: "", duration: "", sourceBalance: "available" });
-            loadUsers();
-        } catch (err) {
-            console.error(err);
-            alert("Failed to create investment");
-        } finally {
-            setSaving(false);
-        }
-    };
 
     const handleResetPassword = async () => {
         if (!selectedUser) return;
@@ -345,14 +310,6 @@ export default function UsersPage() {
                             {/* Actions */}
                             <div className="space-y-2">
                                 <button
-                                    onClick={() => setShowInvestmentModal(true)}
-                                    className="w-full flex items-center justify-center gap-2 bg-white text-black py-2.5 font-bold hover:bg-zinc-200 transition-colors text-sm"
-                                >
-                                    <TrendingUp size={16} />
-                                    Create Investment
-                                </button>
-
-                                <button
                                     onClick={() => setShowPasswordModal(true)}
                                     className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
                                 >
@@ -430,68 +387,6 @@ export default function UsersPage() {
                 </div>
             )}
 
-            {/* Investment Modal */}
-            {showInvestmentModal && selectedUser && (
-                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-                    <div className="bg-zinc-950 border border-zinc-800 w-full max-w-md">
-                        <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-                            <h3 className="text-sm font-bold uppercase tracking-wider">Create Investment</h3>
-                            <button onClick={() => setShowInvestmentModal(false)}><X size={18} /></button>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Amount</label>
-                                <input
-                                    type="number"
-                                    value={investmentData.amount}
-                                    onChange={(e) => setInvestmentData({ ...investmentData, amount: e.target.value })}
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
-                                    step="0.01"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Profit % (per day)</label>
-                                <input
-                                    type="number"
-                                    value={investmentData.profitPercent}
-                                    onChange={(e) => setInvestmentData({ ...investmentData, profitPercent: e.target.value })}
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
-                                    step="0.01"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Duration (days)</label>
-                                <input
-                                    type="number"
-                                    value={investmentData.duration}
-                                    onChange={(e) => setInvestmentData({ ...investmentData, duration: e.target.value })}
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Source Balance</label>
-                                <select
-                                    value={investmentData.sourceBalance}
-                                    onChange={(e) => setInvestmentData({ ...investmentData, sourceBalance: e.target.value as any })}
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
-                                >
-                                    <option value="available">Available Balance</option>
-                                    <option value="invested">Total Invested</option>
-                                    <option value="totalProfit">Total Profit</option>
-                                    <option value="bonus">Bonus</option>
-                                </select>
-                            </div>
-                            <button
-                                onClick={handleCreateInvestment}
-                                disabled={saving}
-                                className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
-                            >
-                                {saving ? "CREATING..." : "CREATE INVESTMENT"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Password Reset Modal */}
             {showPasswordModal && selectedUser && (
