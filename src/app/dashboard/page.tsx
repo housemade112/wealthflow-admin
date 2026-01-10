@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { getStats } from "@/lib/api";
-import { Users, ArrowDownCircle, ArrowUpCircle, TrendingUp, DollarSign, Clock } from "lucide-react";
+import { Users, ArrowDownCircle, ArrowUpCircle, TrendingUp, DollarSign, Clock, Rocket } from "lucide-react";
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [deploying, setDeploying] = useState(false);
+    const [deployStatus, setDeployStatus] = useState<"idle" | "success" | "error">("idle");
 
     useEffect(() => {
         loadStats();
@@ -21,6 +23,38 @@ export default function DashboardPage() {
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const triggerDeploy = async () => {
+        const deployHookUrl = process.env.NEXT_PUBLIC_DEPLOY_HOOK_URL;
+
+        if (!deployHookUrl) {
+            setDeployStatus("error");
+            setTimeout(() => setDeployStatus("idle"), 3000);
+            return;
+        }
+
+        try {
+            setDeploying(true);
+            setDeployStatus("idle");
+
+            const response = await fetch(deployHookUrl, {
+                method: "POST",
+            });
+
+            if (response.ok) {
+                setDeployStatus("success");
+                setTimeout(() => setDeployStatus("idle"), 5000);
+            } else {
+                setDeployStatus("error");
+                setTimeout(() => setDeployStatus("idle"), 3000);
+            }
+        } catch (err) {
+            setDeployStatus("error");
+            setTimeout(() => setDeployStatus("idle"), 3000);
+        } finally {
+            setDeploying(false);
         }
     };
 
@@ -102,6 +136,33 @@ export default function DashboardPage() {
                         <p className="text-sm text-zinc-500">{stats?.activeInvestments || 0} active</p>
                     </a>
                 </div>
+            </div>
+
+            {/* Deploy Section */}
+            <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                    <Rocket size={20} className="text-[#00C805]" />
+                    Deployment
+                </h3>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={triggerDeploy}
+                        disabled={deploying}
+                        className="flex items-center gap-2 bg-[#00C805] text-black px-6 py-3 rounded-xl font-bold hover:bg-[#00B004] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Rocket size={18} />
+                        {deploying ? "Deploying..." : "Deploy Updates"}
+                    </button>
+                    {deployStatus === "success" && (
+                        <p className="text-sm text-[#00C805] font-medium">✓ Deployment triggered successfully!</p>
+                    )}
+                    {deployStatus === "error" && (
+                        <p className="text-sm text-red-500 font-medium">✗ Deploy hook not configured. Add NEXT_PUBLIC_DEPLOY_HOOK_URL env variable.</p>
+                    )}
+                </div>
+                <p className="text-xs text-zinc-600 mt-3">
+                    Click to trigger a new deployment from the latest code in main branch
+                </p>
             </div>
         </div>
     );
