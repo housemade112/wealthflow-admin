@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment, getUser, updateUser } from "@/lib/api";
-import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon, DollarSign, X, Loader2 } from "lucide-react";
+import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment, getUser, updateUser, updateInvestment } from "@/lib/api";
+import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon, DollarSign, X, Loader2, Edit2 } from "lucide-react";
 
 export default function InvestmentsPage() {
     const [investments, setInvestments] = useState<any[]>([]);
@@ -11,6 +11,15 @@ export default function InvestmentsPage() {
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [showModal, setShowModal] = useState(false);
     const [processing, setProcessing] = useState(false);
+
+    // Edit Investment State
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingInvestment, setEditingInvestment] = useState<any | null>(null);
+    const [editForm, setEditForm] = useState({ profitPercent: "", durationDays: "", payoutFrequency: "" });
+
+    // Details Modal State
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedInvestmentDetails, setSelectedInvestmentDetails] = useState<any | null>(null);
 
     // Balance Management State
     const [selectedUser, setSelectedUser] = useState<any | null>(null);
@@ -69,6 +78,42 @@ export default function InvestmentsPage() {
         } finally {
             setLoadingUser(false);
         }
+    };
+
+    const handleOpenEdit = (investment: any) => {
+        setEditingInvestment(investment);
+        setEditForm({
+            profitPercent: investment.profitPercent.toString(),
+            durationDays: investment.durationDays.toString(),
+            payoutFrequency: investment.payoutFrequency.toString(),
+        });
+        setShowEditModal(true);
+    };
+
+    const handleUpdateInvestment = async () => {
+        if (!editingInvestment) return;
+        setProcessing(true);
+        try {
+            await updateInvestment(editingInvestment.id, {
+                profitPercent: parseFloat(editForm.profitPercent),
+                durationDays: parseInt(editForm.durationDays),
+                payoutFrequency: parseInt(editForm.payoutFrequency),
+            });
+            setShowEditModal(false);
+            setEditingInvestment(null);
+            alert("Investment updated successfully!");
+            loadInvestments();
+        } catch (err) {
+            console.error(err);
+            alert("Failed to update investment");
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleOpenDetails = (investment: any) => {
+        setSelectedInvestmentDetails(investment);
+        setShowDetailsModal(true);
     };
 
     const handleUpdateBalance = async () => {
@@ -214,15 +259,22 @@ export default function InvestmentsPage() {
                                         <span className="text-xs font-medium px-2 py-1 rounded bg-[#00C805]/10 text-[#00C805] uppercase">
                                             {inv.status}
                                         </span>
+                                        <button
+                                            onClick={() => handleOpenDetails(inv)}
+                                            className="text-white text-xs underline decoration-zinc-600 hover:text-[#00C805] hover:decoration-[#00C805] transition-colors ml-2"
+                                        >
+                                            View Details
+                                        </button>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <p className="font-bold">{inv.user?.email || "Unknown User"}</p>
                                         <button
                                             onClick={() => handleOpenBalance(inv.userId)}
-                                            className="text-zinc-500 hover:text-[#00C805] transition-colors"
+                                            className="flex items-center gap-1 bg-[#00C805]/10 text-[#00C805] px-2 py-1 rounded text-xs font-bold hover:bg-[#00C805]/20 transition-colors uppercase tracking-wider"
                                             title="Manage User Balance"
                                         >
-                                            <DollarSign size={16} />
+                                            <DollarSign size={12} />
+                                            Balance
                                         </button>
                                     </div>
                                 </div>
@@ -250,6 +302,12 @@ export default function InvestmentsPage() {
 
                                 {inv.status === "ACTIVE" && (
                                     <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleOpenEdit(inv)}
+                                            className="bg-zinc-800 text-white border border-zinc-700 px-4 py-2 font-bold text-xs rounded-lg hover:bg-zinc-700 transition-colors uppercase tracking-wider"
+                                        >
+                                            Edit
+                                        </button>
                                         <button
                                             onClick={() => handleStopInvestment(inv.id)}
                                             className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 font-bold text-xs rounded-lg hover:bg-red-500/20 transition-colors uppercase tracking-wider"
@@ -386,86 +444,217 @@ export default function InvestmentsPage() {
                     </div>
                 </div>
             )}
-            {/* Balance Modal */}
-            {showBalanceModal && selectedUser && (
-                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-                    <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
-                        <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-                            <h3 className="text-sm font-bold uppercase tracking-wider">
-                                {balanceOperation === 'add' ? 'Add to' : 'Reduce'} Balance
-                            </h3>
-                            <button onClick={() => setShowBalanceModal(false)}><X size={18} /></button>
+        </div>
+    )
+}
+
+{/* Investment Details Modal */ }
+{
+    showDetailsModal && selectedInvestmentDetails && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+            <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm rounded-xl overflow-hidden">
+                <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
+                    <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                        <Clock size={16} className="text-[#00C805]" />
+                        Investment Schedule
+                    </h3>
+                    <button onClick={() => setShowDetailsModal(false)}><X size={18} /></button>
+                </div>
+                <div className="p-6 space-y-6">
+                    {/* Header Stats */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-zinc-900 p-3 rounded-lg text-center border border-zinc-800">
+                            <p className="text-zinc-500 text-[10px] uppercase mb-1">Payout Amount</p>
+                            <p className="text-xl font-bold text-[#00C805]">
+                                ${(selectedInvestmentDetails.amount * (selectedInvestmentDetails.profitPercent / 100)).toLocaleString()}
+                            </p>
+                            <p className="text-[10px] text-zinc-500">per payout</p>
                         </div>
-                        <div className="p-6 space-y-4">
-                            {/* Add/Reduce Toggle */}
-                            <div className="flex bg-zinc-900 rounded-lg p-1">
-                                <button
-                                    type="button"
-                                    onClick={() => setBalanceOperation('add')}
-                                    className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'add'
-                                        ? 'bg-[#00C805] text-black'
-                                        : 'text-zinc-500 hover:text-white'
-                                        }`}
-                                >
-                                    ADD
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setBalanceOperation('reduce')}
-                                    className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'reduce'
-                                        ? 'bg-red-500 text-white'
-                                        : 'text-zinc-500 hover:text-white'
-                                        }`}
-                                >
-                                    REDUCE
-                                </button>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Balance Field</label>
-                                <select
-                                    value={balanceField}
-                                    onChange={(e) => setBalanceField(e.target.value as 'available' | 'invested' | 'totalProfit' | 'bonus')}
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
-                                >
-                                    <option value="available">Available Balance</option>
-                                    <option value="invested">Total Invested</option>
-                                    <option value="totalProfit">Total Profit</option>
-                                    <option value="bonus">Bonus</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Amount (USD)</label>
-                                <input
-                                    type="number"
-                                    value={newBalance}
-                                    onChange={(e) => setNewBalance(e.target.value)}
-                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-lg text-white focus:border-white outline-none"
-                                    step="0.01"
-                                    placeholder="Enter amount"
-                                />
-                            </div>
-
-                            <div className="bg-zinc-900 p-3 rounded text-center">
-                                <p className="text-xs text-zinc-500 mb-1">Current {balanceField} Balance</p>
-                                <p className="text-xl font-mono text-white">
-                                    ${parseFloat(selectedUser.balance?.[balanceField]?.toString() || '0').toLocaleString()}
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={handleUpdateBalance}
-                                disabled={saving}
-                                className={`w-full py-3 font-bold transition-colors disabled:opacity-50 ${balanceOperation === 'add'
-                                    ? 'bg-[#00C805] text-black hover:bg-[#00B004]'
-                                    : 'bg-red-500 text-white hover:bg-red-600'
-                                    }`}
-                            >
-                                {saving ? "SAVING..." : balanceOperation === 'add' ? "ADD BALANCE" : "REDUCE BALANCE"}
-                            </button>
+                        <div className="bg-zinc-900 p-3 rounded-lg text-center border border-zinc-800">
+                            <p className="text-zinc-500 text-[10px] uppercase mb-1">Frequency</p>
+                            <p className="text-xl font-bold text-white">
+                                Every {24 / selectedInvestmentDetails.payoutFrequency}h
+                            </p>
+                            <p className="text-[10px] text-zinc-500">{selectedInvestmentDetails.payoutFrequency}x Daily</p>
                         </div>
                     </div>
+
+                    {/* Timeline */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800">
+                                <Clock size={14} className="text-zinc-400" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 uppercase">First Payout</p>
+                                <p className="font-medium text-sm">
+                                    {new Date(new Date(selectedInvestmentDetails.startedAt).getTime() + (24 / selectedInvestmentDetails.payoutFrequency * 60 * 60 * 1000)).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800">
+                                <TrendingUp size={14} className="text-zinc-400" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 uppercase">Total Expected Profit</p>
+                                <p className="font-medium text-sm">
+                                    ${(selectedInvestmentDetails.amount * (selectedInvestmentDetails.profitPercent / 100) * (selectedInvestmentDetails.durationDays * selectedInvestmentDetails.payoutFrequency)).toLocaleString()}
+                                </p>
+                                <p className="text-[10px] text-zinc-500">
+                                    over {selectedInvestmentDetails.durationDays} days
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => setShowDetailsModal(false)}
+                        className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors uppercase rounded-lg text-sm"
+                    >
+                        Close Details
+                    </button>
                 </div>
-            )}
+            </div>
         </div>
+    )
+}
+
+{/* Edit Investment Modal */ }
+{
+    showEditModal && editingInvestment && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+            <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
+                <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+                    <h3 className="text-sm font-bold uppercase tracking-wider">Edit Investment</h3>
+                    <button onClick={() => setShowEditModal(false)}><X size={18} /></button>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Profit % (Total)</label>
+                        <input
+                            type="number"
+                            value={editForm.profitPercent}
+                            onChange={(e) => setEditForm({ ...editForm, profitPercent: e.target.value })}
+                            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Duration (Days)</label>
+                        <input
+                            type="number"
+                            value={editForm.durationDays}
+                            onChange={(e) => setEditForm({ ...editForm, durationDays: e.target.value })}
+                            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Payouts per Day</label>
+                        <select
+                            value={editForm.payoutFrequency}
+                            onChange={(e) => setEditForm({ ...editForm, payoutFrequency: e.target.value })}
+                            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                        >
+                            <option value="1">1x Daily (Every 24h)</option>
+                            <option value="2">2x Daily (Every 12h)</option>
+                            <option value="4">4x Daily (Every 6h)</option>
+                        </select>
+                    </div>
+                    <button
+                        onClick={handleUpdateInvestment}
+                        disabled={processing}
+                        className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                    >
+                        {processing ? "SAVING..." : "SAVE CHANGES"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+{/* Balance Modal */ }
+{
+    showBalanceModal && selectedUser && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+            <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
+                <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+                    <h3 className="text-sm font-bold uppercase tracking-wider">
+                        {balanceOperation === 'add' ? 'Add to' : 'Reduce'} Balance
+                    </h3>
+                    <button onClick={() => setShowBalanceModal(false)}><X size={18} /></button>
+                </div>
+                <div className="p-6 space-y-4">
+                    {/* Add/Reduce Toggle */}
+                    <div className="flex bg-zinc-900 rounded-lg p-1">
+                        <button
+                            type="button"
+                            onClick={() => setBalanceOperation('add')}
+                            className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'add'
+                                ? 'bg-[#00C805] text-black'
+                                : 'text-zinc-500 hover:text-white'
+                                }`}
+                        >
+                            ADD
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setBalanceOperation('reduce')}
+                            className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'reduce'
+                                ? 'bg-red-500 text-white'
+                                : 'text-zinc-500 hover:text-white'
+                                }`}
+                        >
+                            REDUCE
+                        </button>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Balance Field</label>
+                        <select
+                            value={balanceField}
+                            onChange={(e) => setBalanceField(e.target.value as 'available' | 'invested' | 'totalProfit' | 'bonus')}
+                            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                        >
+                            <option value="available">Available Balance</option>
+                            <option value="invested">Total Invested</option>
+                            <option value="totalProfit">Total Profit</option>
+                            <option value="bonus">Bonus</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Amount (USD)</label>
+                        <input
+                            type="number"
+                            value={newBalance}
+                            onChange={(e) => setNewBalance(e.target.value)}
+                            className="w-full bg-zinc-900 border border-zinc-800 p-3 text-lg text-white focus:border-white outline-none"
+                            step="0.01"
+                            placeholder="Enter amount"
+                        />
+                    </div>
+
+                    <div className="bg-zinc-900 p-3 rounded text-center">
+                        <p className="text-xs text-zinc-500 mb-1">Current {balanceField} Balance</p>
+                        <p className="text-xl font-mono text-white">
+                            ${parseFloat(selectedUser.balance?.[balanceField]?.toString() || '0').toLocaleString()}
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={handleUpdateBalance}
+                        disabled={saving}
+                        className={`w-full py-3 font-bold transition-colors disabled:opacity-50 ${balanceOperation === 'add'
+                            ? 'bg-[#00C805] text-black hover:bg-[#00B004]'
+                            : 'bg-red-500 text-white hover:bg-red-600'
+                            }`}
+                    >
+                        {saving ? "SAVING..." : balanceOperation === 'add' ? "ADD BALANCE" : "REDUCE BALANCE"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+        </div >
     );
 }

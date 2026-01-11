@@ -139,6 +139,13 @@ export const stopInvestment = (id: string) =>
         method: 'POST',
     });
 
+// Update investment
+export const updateInvestment = (id: string, data: any) =>
+    apiRequest(`/api/admin/investments/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+
 // Admin Logs
 export const getAdminLogs = () => apiRequest('/api/admin/logs');
 
