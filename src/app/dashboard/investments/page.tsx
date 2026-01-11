@@ -477,32 +477,37 @@ export default function InvestmentsPage() {
                                     </div>
                                 </div>
 
-                                {/* Timeline */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800">
-                                            <Clock size={14} className="text-zinc-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-zinc-500 uppercase">First Payout</p>
-                                            <p className="font-medium text-sm">
-                                                {new Date(new Date(selectedInvestmentDetails.startedAt).getTime() + (24 / selectedInvestmentDetails.payoutFrequency * 60 * 60 * 1000)).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800">
-                                            <TrendingUp size={14} className="text-zinc-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-zinc-500 uppercase">Total Expected Profit</p>
-                                            <p className="font-medium text-sm">
-                                                ${(selectedInvestmentDetails.amount * (selectedInvestmentDetails.profitPercent / 100) * (selectedInvestmentDetails.durationDays * selectedInvestmentDetails.payoutFrequency)).toLocaleString()}
-                                            </p>
-                                            <p className="text-[10px] text-zinc-500">
-                                                over {selectedInvestmentDetails.durationDays} days
-                                            </p>
-                                        </div>
+                                {/* Detailed Schedule Table */}
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold uppercase text-zinc-500 mb-3">Profit Schedule</h4>
+                                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {Array.from({ length: selectedInvestmentDetails.durationDays * selectedInvestmentDetails.payoutFrequency }).map((_, index) => {
+                                            const payoutNumber = index + 1;
+                                            const intervalHours = 24 / selectedInvestmentDetails.payoutFrequency;
+                                            const payoutTime = new Date(new Date(selectedInvestmentDetails.startedAt).getTime() + (payoutNumber * intervalHours * 60 * 60 * 1000));
+                                            const isDone = payoutNumber <= selectedInvestmentDetails.totalPayouts; // Check if this payout has happened based on tracked count
+
+                                            return (
+                                                <div key={index} className={`flex items-center justify-between p-3 rounded-lg border ${isDone ? 'bg-[#00C805]/10 border-[#00C805]/20' : 'bg-zinc-900 border-zinc-800'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${isDone ? 'bg-[#00C805] text-black' : 'bg-zinc-800 text-zinc-500'}`}>
+                                                            {payoutNumber}
+                                                        </div>
+                                                        <div>
+                                                            <p className={`text-xs font-bold ${isDone ? 'text-[#00C805]' : 'text-zinc-400'}`}>
+                                                                {isDone ? 'PAID' : 'PENDING'}
+                                                            </p>
+                                                            <p className="text-[10px] text-zinc-500">
+                                                                {payoutTime.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <p className={`text-sm font-bold ${isDone ? 'text-white' : 'text-zinc-500'}`}>
+                                                        +${(selectedInvestmentDetails.amount * (selectedInvestmentDetails.profitPercent / 100)).toFixed(2)}
+                                                    </p>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
