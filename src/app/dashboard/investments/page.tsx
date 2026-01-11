@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment, getUser, updateUser, updateInvestment } from "@/lib/api";
-import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon, DollarSign, X, Loader2, Edit2 } from "lucide-react";
+import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment, getUser, updateUser, updateInvestment, triggerPayouts } from "@/lib/api";
+import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon, DollarSign, X, Loader2, Edit2, Play } from "lucide-react";
 
 export default function InvestmentsPage() {
     const [investments, setInvestments] = useState<any[]>([]);
@@ -11,6 +11,7 @@ export default function InvestmentsPage() {
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [showModal, setShowModal] = useState(false);
     const [processing, setProcessing] = useState(false);
+    const [runningPayouts, setRunningPayouts] = useState(false);
 
     // Edit Investment State
     const [showEditModal, setShowEditModal] = useState(false);
@@ -116,6 +117,20 @@ export default function InvestmentsPage() {
         setShowDetailsModal(true);
     };
 
+    const handleTriggerPayouts = async () => {
+        setRunningPayouts(true);
+        try {
+            await triggerPayouts();
+            alert("Payout check completed!");
+            loadInvestments(); // Refresh to see new payouts
+        } catch (err) {
+            console.error(err);
+            alert("Failed to trigger payouts");
+        } finally {
+            setRunningPayouts(false);
+        }
+    };
+
     const handleUpdateBalance = async () => {
         if (!selectedUser || !newBalance) return;
         setSaving(true);
@@ -211,13 +226,23 @@ export default function InvestmentsPage() {
                     <h2 className="text-2xl font-bold mb-2">Investments</h2>
                     <p className="text-zinc-500">Create and manage user investments</p>
                 </div>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 bg-[#00C805] text-black px-4 py-2 rounded-xl font-bold hover:bg-[#00B004] transition-colors"
-                >
-                    <Plus size={20} />
-                    Create Investment
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={handleTriggerPayouts}
+                        disabled={runningPayouts}
+                        className="bg-zinc-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                    >
+                        {runningPayouts ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
+                        Run Payouts
+                    </button>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-[#00C805] text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-[#00B004] transition-colors"
+                    >
+                        <Plus size={20} />
+                        Create Investment
+                    </button>
+                </div>
             </div>
 
             {/* Status Filter */}

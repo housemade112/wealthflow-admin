@@ -146,6 +146,9 @@ export const updateInvestment = (id: string, data: any) =>
         body: JSON.stringify(data),
     });
 
+// Trigger Payouts
+export const triggerPayouts = () => apiRequest('/api/admin/investments/trigger-payouts', { method: 'POST' });
+
 // Admin Logs
 export const getAdminLogs = () => apiRequest('/api/admin/logs');
 
