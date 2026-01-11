@@ -653,5 +653,6 @@ export default function InvestmentsPage() {
                 </div>
             </div>
         </div>
-    )
+    );
+}
 
