@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment } from "@/lib/api";
-import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon } from "lucide-react";
+import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment, getUser, updateUser } from "@/lib/api";
+import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon, DollarSign, X, Loader2 } from "lucide-react";
 
 export default function InvestmentsPage() {
     const [investments, setInvestments] = useState<any[]>([]);
@@ -11,6 +11,15 @@ export default function InvestmentsPage() {
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [showModal, setShowModal] = useState(false);
     const [processing, setProcessing] = useState(false);
+
+    // Balance Management State
+    const [selectedUser, setSelectedUser] = useState<any | null>(null);
+    const [showBalanceModal, setShowBalanceModal] = useState(false);
+    const [balanceField, setBalanceField] = useState<'available' | 'invested' | 'totalProfit' | 'bonus'>('available');
+    const [balanceOperation, setBalanceOperation] = useState<'add' | 'reduce'>('add');
+    const [newBalance, setNewBalance] = useState("");
+    const [saving, setSaving] = useState(false);
+    const [loadingUser, setLoadingUser] = useState(false);
 
     // New investment form
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -42,6 +51,49 @@ export default function InvestmentsPage() {
             setUsers(data.users || []);
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleOpenBalance = async (userId: string) => {
+        try {
+            setLoadingUser(true);
+            const data = await getUser(userId);
+            setSelectedUser(data.user);
+            setBalanceField('available');
+            setBalanceOperation('add');
+            setNewBalance("");
+            setShowBalanceModal(true);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to load user details");
+        } finally {
+            setLoadingUser(false);
+        }
+    };
+
+    const handleUpdateBalance = async () => {
+        if (!selectedUser || !newBalance) return;
+        setSaving(true);
+        try {
+            const currentValue = parseFloat(selectedUser?.balance?.[balanceField]?.toString() || "0");
+            const changeAmount = parseFloat(newBalance);
+
+            // ADD or REDUCE based on operation
+            const newValue = balanceOperation === 'add'
+                ? currentValue + changeAmount
+                : Math.max(0, currentValue - changeAmount); // Don't go below 0
+
+            const updateData = { [balanceField]: newValue };
+            await updateUser(selectedUser.id, { balance: updateData });
+
+            // Update local state if needed or just close
+            setShowBalanceModal(false);
+            alert("Balance updated successfully");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to update balance");
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -163,7 +215,16 @@ export default function InvestmentsPage() {
                                             {inv.status}
                                         </span>
                                     </div>
-                                    <p className="font-bold">{inv.user?.email || "Unknown User"}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold">{inv.user?.email || "Unknown User"}</p>
+                                        <button
+                                            onClick={() => handleOpenBalance(inv.userId)}
+                                            className="text-zinc-500 hover:text-[#00C805] transition-colors"
+                                            title="Manage User Balance"
+                                        >
+                                            <DollarSign size={16} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-6 text-center">
@@ -321,6 +382,86 @@ export default function InvestmentsPage() {
                                     {processing ? "Creating..." : "Create Investment"}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Balance Modal */}
+            {showBalanceModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+                    <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm">
+                        <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+                            <h3 className="text-sm font-bold uppercase tracking-wider">
+                                {balanceOperation === 'add' ? 'Add to' : 'Reduce'} Balance
+                            </h3>
+                            <button onClick={() => setShowBalanceModal(false)}><X size={18} /></button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            {/* Add/Reduce Toggle */}
+                            <div className="flex bg-zinc-900 rounded-lg p-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setBalanceOperation('add')}
+                                    className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'add'
+                                        ? 'bg-[#00C805] text-black'
+                                        : 'text-zinc-500 hover:text-white'
+                                        }`}
+                                >
+                                    ADD
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setBalanceOperation('reduce')}
+                                    className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${balanceOperation === 'reduce'
+                                        ? 'bg-red-500 text-white'
+                                        : 'text-zinc-500 hover:text-white'
+                                        }`}
+                                >
+                                    REDUCE
+                                </button>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Balance Field</label>
+                                <select
+                                    value={balanceField}
+                                    onChange={(e) => setBalanceField(e.target.value as 'available' | 'invested' | 'totalProfit' | 'bonus')}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                                >
+                                    <option value="available">Available Balance</option>
+                                    <option value="invested">Total Invested</option>
+                                    <option value="totalProfit">Total Profit</option>
+                                    <option value="bonus">Bonus</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Amount (USD)</label>
+                                <input
+                                    type="number"
+                                    value={newBalance}
+                                    onChange={(e) => setNewBalance(e.target.value)}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-lg text-white focus:border-white outline-none"
+                                    step="0.01"
+                                    placeholder="Enter amount"
+                                />
+                            </div>
+
+                            <div className="bg-zinc-900 p-3 rounded text-center">
+                                <p className="text-xs text-zinc-500 mb-1">Current {balanceField} Balance</p>
+                                <p className="text-xl font-mono text-white">
+                                    ${parseFloat(selectedUser.balance?.[balanceField]?.toString() || '0').toLocaleString()}
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={handleUpdateBalance}
+                                disabled={saving}
+                                className={`w-full py-3 font-bold transition-colors disabled:opacity-50 ${balanceOperation === 'add'
+                                    ? 'bg-[#00C805] text-black hover:bg-[#00B004]'
+                                    : 'bg-red-500 text-white hover:bg-red-600'
+                                    }`}
+                            >
+                                {saving ? "SAVING..." : balanceOperation === 'add' ? "ADD BALANCE" : "REDUCE BALANCE"}
+                            </button>
                         </div>
                     </div>
                 </div>
