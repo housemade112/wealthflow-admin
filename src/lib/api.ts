@@ -127,8 +127,15 @@ export const createInvestment = (data: {
         body: JSON.stringify(data),
     });
 
+// Cancel investment
 export const cancelInvestment = (id: string) =>
     apiRequest(`/api/admin/investments/${id}/cancel`, {
+        method: 'POST',
+    });
+
+// Stop investment
+export const stopInvestment = (id: string) =>
+    apiRequest(`/api/admin/investments/${id}/stop`, {
         method: 'POST',
     });
 

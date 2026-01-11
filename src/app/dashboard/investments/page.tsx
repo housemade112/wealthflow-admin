@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getInvestments, getUsers, createInvestment, cancelInvestment } from "@/lib/api";
-import { Plus, TrendingUp, Clock, CheckCircle, XCircle } from "lucide-react";
+import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment } from "@/lib/api";
+import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon } from "lucide-react";
 
 export default function InvestmentsPage() {
     const [investments, setInvestments] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [statusFilter, setStatusFilter] = useState("ACTIVE");
+    const [statusFilter, setStatusFilter] = useState("ALL");
     const [showModal, setShowModal] = useState(false);
     const [processing, setProcessing] = useState(false);
 
@@ -27,7 +27,7 @@ export default function InvestmentsPage() {
     const loadInvestments = async () => {
         try {
             setLoading(true);
-            const data = await getInvestments(statusFilter);
+            const data = await getInvestments(statusFilter === "ALL" ? undefined : statusFilter);
             setInvestments(data.investments || []);
         } catch (err) {
             console.error(err);
@@ -80,6 +80,16 @@ export default function InvestmentsPage() {
         }
     };
 
+    const handleStopInvestment = async (id: string) => {
+        if (!confirm("STOP this investment? It will end immediately and Principal will be returned.")) return;
+        try {
+            await stopInvestment(id);
+            loadInvestments();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const resetForm = () => {
         setSelectedUsers([]);
         setAmount("");
@@ -93,6 +103,7 @@ export default function InvestmentsPage() {
             case "ACTIVE": return <TrendingUp size={16} className="text-white" />;
             case "COMPLETED": return <CheckCircle size={16} className="text-white" />;
             case "CANCELLED": return <XCircle size={16} className="text-zinc-500" />;
+            case "STOPPED": return <AlertOctagon size={16} className="text-red-500" />;
         }
     };
 
@@ -114,7 +125,7 @@ export default function InvestmentsPage() {
 
             {/* Status Filter */}
             <div className="flex gap-2">
-                {["ACTIVE", "COMPLETED", "CANCELLED"].map((status) => (
+                {["ALL", "ACTIVE", "COMPLETED", "STOPPED", "CANCELLED"].map((status) => (
                     <button
                         key={status}
                         onClick={() => setStatusFilter(status)}
@@ -177,12 +188,20 @@ export default function InvestmentsPage() {
                                 </div>
 
                                 {inv.status === "ACTIVE" && (
-                                    <button
-                                        onClick={() => handleCancelInvestment(inv.id)}
-                                        className="bg-zinc-900 text-white border border-zinc-800 px-4 py-2 font-medium hover:bg-zinc-800 transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleStopInvestment(inv.id)}
+                                            className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 font-bold text-xs rounded-lg hover:bg-red-500/20 transition-colors uppercase tracking-wider"
+                                        >
+                                            Stop
+                                        </button>
+                                        <button
+                                            onClick={() => handleCancelInvestment(inv.id)}
+                                            className="bg-zinc-900 text-white border border-zinc-800 px-4 py-2 font-medium hover:bg-zinc-800 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
