@@ -612,6 +612,28 @@ export default function InvestmentsPage() {
                                 </button>
 
                                 <button
+                                    onClick={async () => {
+                                        if (!confirm("Force CATCH UP all missed payouts? This might take a few seconds.")) return;
+                                        try {
+                                            const res = await catchUpInvestment(selectedInvestmentDetails.id);
+                                            alert(res.message);
+                                            // Reload data
+                                            const updated = await getInvestments();
+                                            const newInvestments = updated.investments || [];
+                                            setInvestments(newInvestments);
+                                            const updatedItem = newInvestments.find((i: any) => i.id === selectedInvestmentDetails.id);
+                                            if (updatedItem) setSelectedInvestmentDetails(updatedItem);
+                                        } catch (e: any) {
+                                            console.error(e);
+                                            alert(e.message || "Failed to catch up");
+                                        }
+                                    }}
+                                    className="w-full bg-amber-500/10 text-amber-500 py-3 font-bold hover:bg-amber-500/20 transition-colors uppercase rounded-lg text-sm mb-4"
+                                >
+                                    Force Catch Up (All Missed)
+                                </button>
+
+                                <button
                                     onClick={() => setShowDetailsModal(false)}
                                     className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors uppercase rounded-lg text-sm"
                                 >
