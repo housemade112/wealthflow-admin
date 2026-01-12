@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getStats } from "@/lib/api";
+import Link from "next/link";
 import { Users, ArrowDownCircle, ArrowUpCircle, TrendingUp, DollarSign, Clock, Rocket } from "lucide-react";
 
 export default function DashboardPage() {
@@ -81,12 +82,12 @@ export default function DashboardPage() {
     }
 
     const statCards = [
-        { label: "Total Users", value: stats?.totalUsers || 0, icon: Users },
-        { label: "Active Users", value: stats?.activeUsers || 0, icon: Users },
-        { label: "Pending Deposits", value: stats?.pendingDeposits || 0, icon: ArrowDownCircle },
-        { label: "Pending Withdrawals", value: stats?.pendingWithdrawals || 0, icon: ArrowUpCircle },
-        { label: "Active Investments", value: stats?.activeInvestments || 0, icon: TrendingUp },
-        { label: "Total Available", value: `$${(stats?.totalBalance?.available || 0).toLocaleString()}`, icon: DollarSign },
+        { label: "Total Users", value: stats?.totalUsers || 0, icon: Users, href: "/dashboard/users" },
+        { label: "Active Users", value: stats?.activeUsers || 0, icon: Users, href: "/dashboard/users?status=active" },
+        { label: "Pending Deposits", value: stats?.pendingDeposits || 0, icon: ArrowDownCircle, href: "/dashboard/deposits" },
+        { label: "Pending Withdrawals", value: stats?.pendingWithdrawals || 0, icon: ArrowUpCircle, href: "/dashboard/withdrawals" },
+        { label: "Active Investments", value: stats?.activeInvestments || 0, icon: TrendingUp, href: "/dashboard/investments" },
+        { label: "Total Available", value: `$${(stats?.totalBalance?.available || 0).toLocaleString()}`, icon: DollarSign, href: "/dashboard/users" },
     ];
 
     return (
@@ -101,17 +102,19 @@ export default function DashboardPage() {
                 {statCards.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={stat.label} className="bg-zinc-950 border border-zinc-800 p-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                                    <Icon size={24} className="text-zinc-500" />
-                                </div>
-                                <div>
-                                    <p className="text-zinc-500 text-sm">{stat.label}</p>
-                                    <p className="text-2xl font-medium text-white">{stat.value}</p>
+                        <Link key={stat.label} href={stat.href} className="block group">
+                            <div className="bg-zinc-950 border border-zinc-800 p-6 transition-all duration-200 group-hover:border-[#00C805]/50 group-hover:bg-zinc-900/50 cursor-pointer">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:bg-[#00C805]/10 group-hover:border-[#00C805]/30 transition-colors">
+                                        <Icon size={24} className="text-zinc-500 group-hover:text-[#00C805] transition-colors" />
+                                    </div>
+                                    <div>
+                                        <p className="text-zinc-500 text-sm">{stat.label}</p>
+                                        <p className="text-2xl font-medium text-white">{stat.value}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     );
                 })}
             </div>
