@@ -112,6 +112,25 @@ export default function InvestmentsPage() {
         }
     };
 
+    const handleCancelFromEdit = async () => {
+        if (!editingInvestment) return;
+        if (!confirm("Are you sure you want to CANCEL this investment? This will return the principal to the user.")) return;
+
+        setProcessing(true);
+        try {
+            await cancelInvestment(editingInvestment.id);
+            setShowEditModal(false);
+            setEditingInvestment(null);
+            alert("Investment cancelled successfully!");
+            loadInvestments();
+        } catch (err) {
+            console.error(err);
+            alert("Failed to cancel investment");
+        } finally {
+            setProcessing(false);
+        }
+    };
+
     const handleOpenDetails = (investment: any) => {
         setSelectedInvestmentDetails(investment);
         setShowDetailsModal(true);
@@ -588,13 +607,33 @@ export default function InvestmentsPage() {
                                         <option value="4">4x Daily (Every 6h)</option>
                                     </select>
                                 </div>
-                                <button
-                                    onClick={handleUpdateInvestment}
-                                    disabled={processing}
-                                    className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
-                                >
-                                    {processing ? "SAVING..." : "SAVE CHANGES"}
-                                </button>
+                                <div className="pt-3 border-t border-zinc-800 flex justify-between items-center">
+                                    <span className="text-zinc-400 text-xs uppercase">Total Projected Profit:</span>
+                                    <span className="font-bold text-lg text-[#00C805]">
+                                        ${(
+                                            (editingInvestment.amount * (parseFloat(editForm.profitPercent || '0') / 100)) *
+                                            (parseInt(editForm.durationDays || '0') * parseInt(editForm.payoutFrequency || '0'))
+                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-3 pt-2">
+                                    <button
+                                        onClick={handleUpdateInvestment}
+                                        disabled={processing}
+                                        className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50 rounded-lg"
+                                    >
+                                        {processing ? "SAVING..." : "SAVE CHANGES"}
+                                    </button>
+
+                                    <button
+                                        onClick={handleCancelFromEdit}
+                                        disabled={processing}
+                                        className="w-full bg-red-500/10 text-red-500 py-3 font-bold hover:bg-red-500/20 transition-colors disabled:opacity-50 rounded-lg text-sm uppercase"
+                                    >
+                                        Cancel Investment
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
