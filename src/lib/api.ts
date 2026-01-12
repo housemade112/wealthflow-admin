@@ -149,6 +149,9 @@ export const updateInvestment = (id: string, data: any) =>
 // Force Pay Investment
 export const forcePayInvestment = (id: string) => apiRequest(`/api/admin/investments/${id}/force-pay`, { method: 'POST' });
 
+// Catch Up (Process All Missed)
+export const catchUpInvestment = (id: string) => apiRequest(`/api/admin/investments/${id}/catch-up`, { method: 'POST' });
+
 // Trigger Payouts
 export const triggerPayouts = () => apiRequest('/api/admin/investments/trigger-payouts', { method: 'POST' });
 
