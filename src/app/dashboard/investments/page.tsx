@@ -137,16 +137,18 @@ export default function InvestmentsPage() {
     };
 
     const handleTriggerPayouts = async () => {
-        setRunningPayouts(true);
+        setPayoutLoading(true);
         try {
-            await triggerPayouts();
-            alert("Payout check completed!");
-            loadInvestments(); // Refresh to see new payouts
+            const res = await triggerPayouts();
+            // @ts-ignore
+            const count = res.count !== undefined ? res.count : 'unknown';
+            alert(`Payout check complete! Processed ${count} payouts.`);
+            loadInvestments();
         } catch (err) {
             console.error(err);
             alert("Failed to trigger payouts");
         } finally {
-            setRunningPayouts(false);
+            setPayoutLoading(false);
         }
     };
 
