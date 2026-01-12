@@ -259,7 +259,7 @@ export default function UsersPage() {
                 ${selectedUser ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
             `}>
                 <div className="lg:hidden p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
-                    <button onClick={() => selectUser(null)} className="flex items-center gap-2 text-zinc-400">
+                    <button onClick={() => selectUser(null as any)} className="flex items-center gap-2 text-zinc-400">
                         <ArrowLeft size={20} />
                         Back to Users
                     </button>

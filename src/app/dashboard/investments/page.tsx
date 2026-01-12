@@ -211,7 +211,7 @@ export default function InvestmentsPage() {
                 amount: parseFloat(amount),
                 profitPercent: parseFloat(profitPercent),
                 payoutFrequency: parseInt(payoutFrequency),
-                durationDays: parseInt(durationDays),
+                durationDays: parseFloat(durationDays),
             });
             setShowModal(false);
             resetForm();
