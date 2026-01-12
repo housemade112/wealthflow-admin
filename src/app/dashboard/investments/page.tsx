@@ -572,8 +572,15 @@ export default function InvestmentsPage() {
                                         try {
                                             await forcePayInvestment(selectedInvestmentDetails.id);
                                             alert("Payout forced successfully!");
-                                            loadInvestments();
-                                            setShowDetailsModal(false);
+
+                                            // Reload data to reflect change immediately
+                                            const res = await getInvestments();
+                                            const newInvestments = res.investments || [];
+                                            setInvestments(newInvestments);
+
+                                            // Update local modal data
+                                            const updatedItem = newInvestments.find((i: any) => i.id === selectedInvestmentDetails.id);
+                                            if (updatedItem) setSelectedInvestmentDetails(updatedItem);
                                         } catch (e) {
                                             console.error(e);
                                             alert("Failed to force payout");
