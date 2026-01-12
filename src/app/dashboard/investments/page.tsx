@@ -568,12 +568,8 @@ export default function InvestmentsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Duration (Days)</label>
-                                    <input
-                                        type="number"
-                                        value={editForm.durationDays}
-                                        onChange={(e) => setEditForm({ ...editForm, durationDays: e.target.value })}
-                                        className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
+                                    onChange={(e) => setEditForm({ ...editForm, durationDays: e.target.value })}
+                                    className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
                                     />
                                 </div>
                                 <div>
