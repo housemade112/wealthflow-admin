@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment, getUser, updateUser, updateInvestment, triggerPayouts, forcePayInvestment } from "@/lib/api";
+import { getInvestments, getUsers, createInvestment, cancelInvestment, stopInvestment, getUser, updateUser, updateInvestment, triggerPayouts, forcePayInvestment, catchUpInvestment } from "@/lib/api";
 import Link from "next/link";
 import { Plus, TrendingUp, Clock, CheckCircle, XCircle, Ban, AlertOctagon, DollarSign, X, Loader2, Edit2, Play, ArrowLeft } from "lucide-react";
 
