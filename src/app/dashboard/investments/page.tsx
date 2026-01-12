@@ -616,7 +616,14 @@ export default function InvestmentsPage() {
                                         if (!confirm("Force CATCH UP all missed payouts? This might take a few seconds.")) return;
                                         try {
                                             const res = await catchUpInvestment(selectedInvestmentDetails.id);
-                                            alert(res.message);
+
+                                            // Show detailed debug if it didn't pay anything
+                                            if (res.paid === 0 && res.debug) {
+                                                alert(`Up to date! \nDebug: Should have ${res.debug.totalShouldHaveHappened}, Has ${res.debug.currentTotalPayouts}. \nRunning for ${res.debug.hoursRunning} hours.`);
+                                            } else {
+                                                alert(res.message);
+                                            }
+
                                             // Reload data
                                             const updated = await getInvestments();
                                             const newInvestments = updated.investments || [];
