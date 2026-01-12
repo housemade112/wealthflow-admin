@@ -522,10 +522,10 @@ export default function InvestmentsPage() {
                                     <div className="bg-zinc-900 p-3 rounded-lg text-center border border-zinc-800 col-span-2">
                                         <p className="text-zinc-500 text-[10px] uppercase mb-1">Total Expected Return</p>
                                         <p className="text-xl font-bold text-[#00C805]">
-                                            ${(selectedInvestmentDetails.amount + (selectedInvestmentDetails.amount * (selectedInvestmentDetails.profitPercent / 100) * selectedInvestmentDetails.totalPayouts)).toLocaleString()}
+                                            ${(selectedInvestmentDetails.amount + (selectedInvestmentDetails.amount * (selectedInvestmentDetails.profitPercent / 100) * (selectedInvestmentDetails.durationDays * selectedInvestmentDetails.payoutFrequency))).toLocaleString()}
                                         </p>
                                         <p className="text-[10px] text-zinc-500">
-                                            Principal + {(selectedInvestmentDetails.profitPercent * selectedInvestmentDetails.totalPayouts).toFixed(1)}% Profit
+                                            Principal + {(selectedInvestmentDetails.profitPercent * (selectedInvestmentDetails.durationDays * selectedInvestmentDetails.payoutFrequency)).toLocaleString()}% Profit
                                         </p>
                                     </div>
                                 </div>
@@ -587,7 +587,7 @@ export default function InvestmentsPage() {
                             </div>
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Profit % (Total)</label>
+                                    <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Profit % (Per Payout)</label>
                                     <input
                                         type="number"
                                         value={editForm.profitPercent}
