@@ -136,6 +136,25 @@ export default function InvestmentsPage() {
         setShowDetailsModal(true);
     };
 
+    // Auto-trigger payouts every 60 seconds while dashboard is open (Client-side Heartbeat)
+    // This is necessary because Vercel Free Tier only allows 1 cron job per day.
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            if (processing || runningPayouts) return;
+            try {
+                // Silent trigger
+                await triggerPayouts();
+                // We reload investments silently to update the UI if a payment happened
+                const res = await getInvestments();
+                if (res.investments) setInvestments(res.investments);
+            } catch (err) {
+                console.error("Auto-payout check failed:", err);
+            }
+        }, 60000); // 1 minute
+
+        return () => clearInterval(interval);
+    }, [processing, runningPayouts]);
+
     const handleTriggerPayouts = async () => {
         setRunningPayouts(true);
         try {
