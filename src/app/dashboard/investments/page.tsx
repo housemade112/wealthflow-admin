@@ -637,21 +637,19 @@ export default function InvestmentsPage() {
                                     </span>
                                 </div>
 
-                                <div className="space-y-3 pt-2">
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        onClick={() => setShowEditModal(false)}
+                                        className="flex-1 bg-zinc-800 text-white py-3 font-bold hover:bg-zinc-700 transition-colors rounded-lg"
+                                    >
+                                        CANCEL
+                                    </button>
                                     <button
                                         onClick={handleUpdateInvestment}
                                         disabled={processing}
-                                        className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50 rounded-lg"
+                                        className="flex-1 bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50 rounded-lg"
                                     >
                                         {processing ? "SAVING..." : "SAVE CHANGES"}
-                                    </button>
-
-                                    <button
-                                        onClick={handleCancelFromEdit}
-                                        disabled={processing}
-                                        className="w-full bg-red-500/10 text-red-500 py-3 font-bold hover:bg-red-500/20 transition-colors disabled:opacity-50 rounded-lg text-sm uppercase"
-                                    >
-                                        Cancel Investment
                                     </button>
                                 </div>
                             </div>
