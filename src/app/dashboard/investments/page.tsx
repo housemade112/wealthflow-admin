@@ -597,15 +597,15 @@ export default function InvestmentsPage() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-zinc-500 uppercase mb-2">Payouts per Day</label>
-                                    <select
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="50"
                                         value={editForm.payoutFrequency}
                                         onChange={(e) => setEditForm({ ...editForm, payoutFrequency: e.target.value })}
                                         className="w-full bg-zinc-900 border border-zinc-800 p-3 text-white focus:border-white outline-none"
-                                    >
-                                        <option value="1">1x Daily (Every 24h)</option>
-                                        <option value="2">2x Daily (Every 12h)</option>
-                                        <option value="4">4x Daily (Every 6h)</option>
-                                    </select>
+                                        placeholder="e.g. 24 (Hourly)"
+                                    />
                                 </div>
                                 <div className="pt-3 border-t border-zinc-800 flex justify-between items-center">
                                     <span className="text-zinc-400 text-xs uppercase">Total Projected Profit:</span>
