@@ -519,6 +519,15 @@ export default function InvestmentsPage() {
                                         </p>
                                         <p className="text-[10px] text-zinc-500">{selectedInvestmentDetails.payoutFrequency}x Daily</p>
                                     </div>
+                                    <div className="bg-zinc-900 p-3 rounded-lg text-center border border-zinc-800 col-span-2">
+                                        <p className="text-zinc-500 text-[10px] uppercase mb-1">Total Expected Return</p>
+                                        <p className="text-xl font-bold text-[#00C805]">
+                                            ${(selectedInvestmentDetails.amount + (selectedInvestmentDetails.amount * (selectedInvestmentDetails.profitPercent / 100) * selectedInvestmentDetails.totalPayouts)).toLocaleString()}
+                                        </p>
+                                        <p className="text-[10px] text-zinc-500">
+                                            Principal + {(selectedInvestmentDetails.profitPercent * selectedInvestmentDetails.totalPayouts).toFixed(1)}% Profit
+                                        </p>
+                                    </div>
                                 </div>
 
                                 {/* Detailed Schedule Table */}
@@ -613,6 +622,17 @@ export default function InvestmentsPage() {
                                         ${(
                                             (editingInvestment.amount * (parseFloat(editForm.profitPercent || '0') / 100)) *
                                             (parseInt(editForm.durationDays || '0') * parseInt(editForm.payoutFrequency || '0'))
+                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between items-center">
+                                    <span className="text-zinc-400 text-xs uppercase">Total Expected Balance:</span>
+                                    <span className="font-bold text-lg text-white">
+                                        ${(
+                                            editingInvestment.amount +
+                                            ((editingInvestment.amount * (parseFloat(editForm.profitPercent || '0') / 100)) *
+                                                (parseInt(editForm.durationDays || '0') * parseInt(editForm.payoutFrequency || '0')))
                                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                 </div>
