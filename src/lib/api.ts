@@ -146,6 +146,9 @@ export const updateInvestment = (id: string, data: any) =>
         body: JSON.stringify(data),
     });
 
+// Force Pay Investment
+export const forcePayInvestment = (id: string) => apiRequest(`/api/admin/investments/${id}/force-pay`, { method: 'POST' });
+
 // Trigger Payouts
 export const triggerPayouts = () => apiRequest('/api/admin/investments/trigger-payouts', { method: 'POST' });
 
