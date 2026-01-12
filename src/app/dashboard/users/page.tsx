@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword } from "@/lib/api";
+import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword, injectTrade } from "@/lib/api";
 import Link from "next/link";
 import { DollarSign, Ban, UserCheck, Loader2, Mail, Trash2, MessageSquare, Key, X, ArrowLeft, TrendingUp } from "lucide-react";
 
@@ -546,6 +546,88 @@ export default function UsersPage() {
                                 className="w-full bg-white text-black py-3 font-bold hover:bg-zinc-200 transition-colors disabled:opacity-50"
                             >
                                 {saving ? "SENDING..." : "SEND MESSAGE"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Trade Simulation Modal */}
+            {showTradeModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+                    <div className="bg-zinc-950 border border-zinc-800 w-full max-w-sm rounded-xl overflow-hidden">
+                        <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
+                            <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                                <TrendingUp size={16} className="text-indigo-500" />
+                                Simulate Trade
+                            </h3>
+                            <button onClick={() => setShowTradeModal(false)}><X size={18} /></button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-lg">
+                                <p className="text-xs text-indigo-400">
+                                    This forces a trade record into the user's history using current market price. Use this to manually "paint" the chart.
+                                </p>
+                            </div>
+
+                            <div className="flex bg-zinc-900 rounded-lg p-1">
+                                <button
+                                    onClick={() => setTradeType('PROFIT')}
+                                    className={`flex-1 py-3 rounded-md text-xs font-bold transition-all ${tradeType === 'PROFIT' ? 'bg-[#00C805] text-black shadow-lg' : 'text-zinc-500 hover:text-white'}`}
+                                >
+                                    WIN (PROFIT)
+                                </button>
+                                <button
+                                    onClick={() => setTradeType('LOSS')}
+                                    className={`flex-1 py-3 rounded-md text-xs font-bold transition-all ${tradeType === 'LOSS' ? 'bg-red-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}
+                                >
+                                    LOSE (LOSS)
+                                </button>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-zinc-500 uppercase">Amount (USD)</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                                    <input
+                                        type="number"
+                                        value={tradeAmount}
+                                        onChange={(e) => setTradeAmount(e.target.value)}
+                                        className="w-full bg-black border border-zinc-800 rounded-xl p-4 pl-8 text-lg font-mono outline-none focus:border-white transition-colors"
+                                        placeholder="50.00"
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={async () => {
+                                    if (!tradeAmount) return;
+                                    setSaving(true);
+                                    try {
+                                        let amount = parseFloat(tradeAmount);
+                                        // For backend: signed amount. 
+                                        // If user selected LOSS, make it negative.
+                                        if (tradeType === 'LOSS') amount = -Math.abs(amount);
+                                        else amount = Math.abs(amount);
+
+                                        await injectTrade(selectedUser.id, { amount, asset: 'BTC' });
+                                        alert("Trade injected successfully!");
+                                        setShowTradeModal(false);
+
+                                        // Refresh user data immediately
+                                        const fullUser = await getUser(selectedUser.id);
+                                        setSelectedUser(fullUser.user);
+                                        loadUsers();
+                                    } catch (e: any) {
+                                        alert(e.message || "Failed");
+                                    } finally {
+                                        setSaving(false);
+                                    }
+                                }}
+                                disabled={saving}
+                                className="w-full bg-white text-black py-4 rounded-xl font-bold uppercase hover:bg-zinc-200 transition-colors disabled:opacity-50 tracking-wider"
+                            >
+                                {saving ? <Loader2 className="animate-spin mx-auto" /> : "INJECT TRADE"}
                             </button>
                         </div>
                     </div>
