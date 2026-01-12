@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword } from "@/lib/api";
-import { DollarSign, Ban, UserCheck, Loader2, Mail, Trash2, MessageSquare, Key, X } from "lucide-react";
+import Link from "next/link";
+import { DollarSign, Ban, UserCheck, Loader2, Mail, Trash2, MessageSquare, Key, X, ArrowLeft } from "lucide-react";
 
 interface UserData {
     id: string;
