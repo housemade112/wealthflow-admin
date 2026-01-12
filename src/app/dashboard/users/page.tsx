@@ -253,10 +253,20 @@ export default function UsersPage() {
                 </div>
             </div>
 
-            {/* Right Panel - User Details */}
-            <div className="w-[500px] flex flex-col bg-black">
+            {/* Right Panel - User Details (Responsive Drawer) */}
+            <div className={`
+                fixed inset-0 z-50 bg-black transition-transform duration-300 lg:static lg:w-[500px] lg:flex lg:flex-col lg:translate-x-0 lg:border-l lg:border-zinc-800
+                ${selectedUser ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
+            `}>
+                <div className="lg:hidden p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
+                    <button onClick={() => selectUser(null)} className="flex items-center gap-2 text-zinc-400">
+                        <ArrowLeft size={20} />
+                        Back to Users
+                    </button>
+                </div>
+
                 {!selectedUser ? (
-                    <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
+                    <div className="hidden lg:flex flex-1 items-center justify-center text-zinc-600 text-sm">
                         Select a user to view details
                     </div>
                 ) : loadingUser ? (
