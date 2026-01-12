@@ -66,10 +66,11 @@ export default function DashboardLayout({
 
             {/* Sidebar */}
             <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-64 bg-zinc-950 border-r border-zinc-800
-        transform transition-transform duration-200
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        fixed inset-y-0 left-0 z-50
+        w-72 bg-zinc-950 border-r border-zinc-900
+        transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0 lg:static lg:block
+        ${sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
       `}>
                 <div className="flex flex-col h-full">
                     {/* Logo */}
@@ -125,15 +126,15 @@ export default function DashboardLayout({
             {/* Main content */}
             <div className="flex-1">
                 {/* Mobile header */}
-                <header className="lg:hidden sticky top-0 z-30 bg-zinc-950 border-b border-zinc-800 p-4 flex items-center justify-between">
+                <header className="lg:hidden sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-zinc-900 p-4 flex items-center justify-between">
                     <button
                         onClick={() => setSidebarOpen(true)}
-                        className="p-2 hover:bg-zinc-900 rounded-lg"
+                        className="p-2 -ml-2 hover:bg-zinc-900 rounded-lg text-white"
                     >
                         <Menu size={24} />
                     </button>
-                    <h1 className="font-bold">WealthFlow Admin</h1>
-                    <div className="w-10" />
+                    <h1 className="font-bold text-white text-lg">Admin Panel</h1>
+                    <div className="w-10" /> {/* Spacer for centering */}
                 </header>
 
                 {/* Page content */}
