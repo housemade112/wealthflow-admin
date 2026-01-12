@@ -158,6 +158,13 @@ export const triggerPayouts = () => apiRequest('/api/admin/investments/trigger-p
 // Admin Logs
 export const getAdminLogs = () => apiRequest('/api/admin/logs');
 
+// Inject Trade
+export const injectTrade = (userId: string, data: { amount: number, asset: string }) =>
+    apiRequest(`/api/admin/users/${userId}/inject-trade`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+
 // Wallet Addresses
 export const getWallets = () => apiRequest('/api/admin/wallets');
 

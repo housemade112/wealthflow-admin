@@ -339,6 +339,14 @@ export default function UsersPage() {
                                 </button>
 
                                 <button
+                                    onClick={() => setShowTradeModal(true)}
+                                    className="w-full flex items-center justify-center gap-2 bg-indigo-500/10 text-indigo-500 border border-indigo-500/50 py-2.5 font-bold hover:bg-indigo-500/20 transition-colors text-sm"
+                                >
+                                    <TrendingUp size={16} />
+                                    Simulate Trade (Chart Paint)
+                                </button>
+
+                                <button
                                     onClick={() => setShowPasswordModal(true)}
                                     className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white border border-zinc-800 py-2.5 font-medium hover:bg-zinc-800 transition-colors text-sm"
                                 >
