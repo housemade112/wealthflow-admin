@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getUsers, getUser, updateUser, deleteUser, sendNotification, resetPassword } from "@/lib/api";
 import Link from "next/link";
-import { DollarSign, Ban, UserCheck, Loader2, Mail, Trash2, MessageSquare, Key, X, ArrowLeft } from "lucide-react";
+import { DollarSign, Ban, UserCheck, Loader2, Mail, Trash2, MessageSquare, Key, X, ArrowLeft, TrendingUp } from "lucide-react";
 
 interface UserData {
     id: string;
@@ -44,6 +44,11 @@ export default function UsersPage() {
     const [showMessageModal, setShowMessageModal] = useState(false);
     const [msgTitle, setMsgTitle] = useState("");
     const [msgBody, setMsgBody] = useState("");
+
+    // Trade Simulation
+    const [showTradeModal, setShowTradeModal] = useState(false);
+    const [tradeAmount, setTradeAmount] = useState("");
+    const [tradeType, setTradeType] = useState<"PROFIT" | "LOSS">("PROFIT");
 
     const [saving, setSaving] = useState(false);
 
