@@ -39,7 +39,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">WealthFlow Admin</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">WealthBridg Admin</h1>
           <p className="text-zinc-500">Sign in to access the admin panel</p>
         </div>
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-black border border-zinc-800 rounded-xl p-4 text-white outline-none focus:border-white transition-colors"
-              placeholder="admin@wealthflow.com"
+              placeholder="admin@WealthBridg.com"
               required
             />
           </div>

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "WealthFlow Admin",
-  description: "Admin Dashboard for WealthFlow Investment Platform",
+  title: "WealthBridg Admin",
+  description: "Admin Dashboard for WealthBridg Investment Platform",
 };
 
 export default function RootLayout({
