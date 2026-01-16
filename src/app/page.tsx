@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
 
 // CHANGE THIS PASSPHRASE TO YOUR SECRET
-const ADMIN_PASSPHRASE = "WB2026SecureAdmin";
+const ADMIN_PASSPHRASE = "upwork101@";
 
 export default function LoginPage() {
   const router = useRouter();
