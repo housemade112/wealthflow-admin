@@ -1,7 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.wealthbridg.com';
 
 if (!API_URL) {
-    console.warn('NEXT_PUBLIC_API_URL is not set!');
+    console.warn('NEXT_PUBLIC_API_URL is not set, using fallback');
 }
 
 export async function apiRequest(
