@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.wealthbridg.com';
+// Remove trailing slash if present to prevent double slashes in API calls
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://api.wealthbridg.com').replace(/\/$/, '');
 
 if (!API_URL) {
     console.warn('NEXT_PUBLIC_API_URL is not set, using fallback');
